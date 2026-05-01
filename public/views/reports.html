@@ -1,0 +1,51 @@
+<div class="view-header">
+    <div class="header-text">
+        <h2>Audit Reports</h2>
+        <p>History of all crawl runs and compliance assessments.</p>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label>STATUS</label>
+            <select><option>All Statuses</option></select>
+        </div>
+        <div class="filter-group">
+            <label>DATE RANGE</label>
+            <select><option>Last 30 Days</option></select>
+        </div>
+        <div class="filter-group search">
+            <label>DOMAIN SEARCH</label>
+            <input type="text" placeholder="e.g. global.com">
+        </div>
+    </div>
+    <table class="reports-table">
+        <thead>
+            <tr>
+                <th>RUN ID</th>
+                <th>DATE/TIME</th>
+                <th>TARGET DOMAIN</th>
+                <th>COMPLIANCE</th>
+                <th>ISSUES FOUND</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="audit-reports-tbody">
+            <!-- Dynamic report rows -->
+        </tbody>
+    </table>
+    <div class="pagination-row">
+        <div class="pagination-info">
+            Showing 1 to <span id="report-count-footer">5</span> of <span id="report-total-footer">1,429</span> entries
+        </div>
+        <div class="pagination-controls">
+            <button class="page-btn nav">Previous</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn nav">Next</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCAG Compliance Tool | Dashboard</title>
+    <meta name="description" content="Institutional grade accessibility compliance and monitoring dashboard.">
+    
+    <!-- Organized CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/views/dashboard.css">
+    <link rel="stylesheet" href="css/views/scopes.css">
+    <link rel="stylesheet" href="css/views/agents.css">
+    <link rel="stylesheet" href="css/views/reports.css">
+    <link rel="stylesheet" href="css/views/faq.css">
+    <link rel="stylesheet" href="css/views/settings.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <div class="brand-text">
+                    <h1>WCAG</h1>
+                    <span>COMPLIANCE TOOL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item active" data-view="dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="menu-item" data-view="scopes">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10s10-4.477 10-10A10 10 0 0 0 12 2z"></path><path d="M12 6v6l4 2"></path></svg>
+                <span>Scopes</span>
+            </a>
+            <a href="#" class="menu-item" data-view="agents">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Agents</span>
+            </a>
+            <a href="#" class="menu-item" data-view="reports">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Reports</span>
+            </a>
+            <a href="#" class="menu-item" data-view="settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="menu-item" data-view="faq">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span>FAQ</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="scan-progress-mini">
+                <div class="mini-label">Current Scan Progress</div>
+                <div id="mini-status" class="mini-status">System Idle</div>
+                <div class="mini-progress-bg">
+                    <div id="global-progress-bar" class="mini-progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Shell -->
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="search-container">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Search sites or agents...">
+            </div>
+            <div class="top-bar-actions">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name">Compliance Admin</span>
+                        <span class="user-role">Internal Access</span>
+                    </div>
+                    <div class="user-avatar">
+                        <img src="https://ui-avatars.com/api/?name=CA&background=8C1D40&color=fff" alt="User">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main id="app-content" class="content-area">
+            <!-- View Partial Loaded Here -->
+            <div class="view-loading">
+                <div class="spinner"></div>
+                <span>Loading Dashboard...</span>
+            </div>
+        </main>
+    </div>
+
+    <!-- Active Audit Overlay -->
+    <div id="active-audit-overlay" class="audit-overlay hidden">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <span id="overlay-agent-name">Scanning...</span>
+            </div>
+            <div class="overlay-progress">
+                <div id="overlay-progress-bar" class="overlay-progress-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Wizard Modal -->
+    <div id="scan-wizard-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>New Scan Wizard</h3>
+                <span class="close-modal" onclick="closeModal('scan-wizard-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Wizard content coming soon...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" onclick="closeModal('scan-wizard-modal')">Cancel</button>
+                <button class="primary-btn">Next Step</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Scope Modal -->
+    <div id="new-scope-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Scope</h3>
+                <span class="close-modal" onclick="closeModal('new-scope-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Scope Name</label>
+                    <input type="text" placeholder="e.g. My Website">
+                </div>
+                <div class="form-group">
+                    <label>URLs (one per line)</label>
+                    <textarea rows="5" placeholder="https://example.com"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" onclick="closeModal('new-scope-modal')">Cancel</button>
+                <button class="primary-btn">Create Scope</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Sitemap Modal -->
+    <div id="import-sitemap-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Import Sitemap</h3>
+                <span class="close-modal" onclick="closeModal('import-sitemap-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Sitemap URL</label>
+                    <input type="text" placeholder="https://example.com/sitemap.xml">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" onclick="closeModal('import-sitemap-modal')">Cancel</button>
+                <button class="primary-btn">Start Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Point -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

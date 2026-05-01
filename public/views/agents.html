@@ -1,0 +1,21 @@
+<div class="view-header">
+    <div class="header-text">
+        <h2>Compliance Agents</h2>
+        <p>Manage and configure your fleet of specialized accessibility agents.</p>
+    </div>
+    <div class="header-actions">
+        <button class="secondary-btn stop-all-btn" onclick="stopAllAgents()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+            <span>Shutdown Fleet</span>
+        </button>
+        <button class="run-btn" onclick="deployFleet()">
+            <div class="play-icon-circle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <span>Deploy Fleet</span>
+        </button>
+    </div>
+</div>
+<div id="agents-list" class="audits-list-grid">
+    <!-- Dynamic audit cards -->
+</div>

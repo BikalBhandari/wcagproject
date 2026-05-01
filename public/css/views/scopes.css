@@ -1,0 +1,88 @@
+.scopes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.scope-card {
+    background: var(--bg-white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: transform 0.2s;
+}
+
+.scope-card:hover {
+    transform: translateY(-4px);
+}
+
+.scope-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.scope-info h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.url-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: rgba(140, 29, 64, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.last-scan {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.scope-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.view-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-white);
+    padding: 0.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.layout-switcher {
+    display: flex;
+    gap: 2px;
+}
+
+.switcher-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.switcher-btn.active {
+    background: var(--primary);
+    color: var(--text-white);
+}

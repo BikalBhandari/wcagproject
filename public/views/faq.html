@@ -1,0 +1,106 @@
+<div class="view-header">
+    <div class="header-text">
+        <h2>Frequently Asked Questions</h2>
+        <p>Learn how to use the compliance tool and understand our agent fleet.</p>
+    </div>
+</div>
+
+<div class="faq-container">
+    <!-- General FAQ -->
+    <section class="faq-section">
+        <h3 class="faq-section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            General Questions
+        </h3>
+        <div class="faq-accordion">
+            <div class="accordion-item active">
+                <div class="accordion-header">
+                    <span>What does this tool actually do?</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="accordion-content">
+                    <p>This tool is a comprehensive accessibility auditing platform. it uses a fleet of specialized AI agents to crawl your websites and identify WCAG compliance issues, specifically focusing on missing alt text, broken links, and semantic structure.</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>How do I start a new scan?</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="accordion-content">
+                    <p>Navigate to the <strong>Dashboard</strong> and click "Start New Scan", or go to the <strong>Scopes</strong> tab and click the "Run Scan" button on a specific scope. You can also create new scopes by importing sitemaps.</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>How does the Coda integration work?</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="accordion-content">
+                    <p>Once you provide a Coda API Token and Doc ID in the <strong>Settings</strong>, the system will automatically sync every completed audit report to your Coda document, creating new sub-pages for each scan.</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>Why do I only see one issue per element?</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="accordion-content">
+                    <p>To keep reports clean and actionable, our <strong>Intelligent Post-Processor</strong> merges overlapping findings. If multiple agents identify issues on the same element, the system automatically prioritizes the most severe problem (e.g., a "Missing Alt" takes precedence over "Generic Alt").</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agent Docs -->
+    <section class="faq-section">
+        <h3 class="faq-section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            Agent Documentation
+        </h3>
+        <div class="faq-card">
+            <h4>Active Fleet Capabilities</h4>
+            <p>Our agents are specialized in different WCAG criteria:</p>
+            <ul style="margin-top: 1rem; padding-left: 1.5rem; color: var(--text-dim); line-height: 1.8;">
+                <!-- FAQ_AGENTS_START -->
+                <li><strong>Alt Text Presence:</strong> Identifies images missing alt attributes or properly using empty alt text.</li>
+                <li><strong>Alt Text Quality:</strong> Evaluates descriptive quality of alt text using contextual heuristics and accessibility best practices.</li>
+                <li><strong>Link Integrity:</strong> Validates broken internal and external links.</li>
+                <li><strong>Heading Structure:</strong> Validates that the page has a proper heading hierarchy.</li>
+                <li><strong>Landmark & Structure:</strong> Validates semantic landmarks like &lt;main&gt;, &lt;nav&gt;, &lt;header&gt;.</li>
+                <!-- FAQ_AGENTS_END -->
+            </ul>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="faq-section">
+        <h3 class="faq-section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+            Technology Stack
+        </h3>
+        <div class="faq-tech-grid">
+            <div class="tech-item">
+                <div class="tech-icon">NODE</div>
+                <div class="tech-details">
+                    <h5>Backend Runtime</h5>
+                    <p>Node.js with Express for API and Socket.io for real-time updates.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">AI</div>
+                <div class="tech-details">
+                    <h5>Analysis Engine</h5>
+                    <p>Google Gemini & Vision AI for intelligent image and content analysis.</p>
+                </div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-icon">DB</div>
+                <div class="tech-details">
+                    <h5>Data Storage</h5>
+                    <p>JSON-based file system for scopes, settings, and audit logs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
