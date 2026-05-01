@@ -1,0 +1,42 @@
+<div class="view-header">
+    <div class="header-text">
+        <h2>Scopes</h2>
+        <p>Define and manage the sets of URLs you want to audit.</p>
+    </div>
+    <div class="view-controls">
+        <div class="layout-switcher">
+            <button class="switcher-btn active" data-view-mode="grid" onclick="setScopeView('grid')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Grid</span>
+            </button>
+            <button class="switcher-btn" data-view-mode="list" onclick="setScopeView('list')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                <span>List</span>
+            </button>
+        </div>
+    </div>
+    <div class="header-actions">
+        <button class="secondary-btn" onclick="openImportModal()">Import Sitemap</button>
+        <button class="primary-btn" onclick="openNewScopeModal()">+ New Scope</button>
+    </div>
+</div>
+
+<div id="scopes-list" class="scopes-grid">
+    <!-- Dynamic scope cards -->
+</div>
+
+<div id="scopes-list-view" class="table-card hidden">
+    <table>
+        <thead>
+            <tr>
+                <th>SCOPE NAME</th>
+                <th>URL COUNT</th>
+                <th>LAST SCAN</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="scopes-list-tbody">
+            <!-- Dynamic scope rows -->
+        </tbody>
+    </table>
+</div>

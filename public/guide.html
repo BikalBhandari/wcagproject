@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coda Ingestion Guide | Accessibility Auditor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        .guide-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        .guide-content {
+            background: var(--bg-white);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 3rem;
+            box-shadow: var(--shadow);
+        }
+        .guide-content h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .guide-content h2 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--bg-light);
+        }
+        .guide-content p {
+            line-height: 1.7;
+            color: var(--text-dim);
+            margin-bottom: 1.25rem;
+        }
+        .guide-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background: #F3F4F6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+        .guide-content pre {
+            background: #1F2937;
+            color: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        .guide-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: transform 0.2s;
+        }
+        .back-link:hover {
+            transform: translateX(-4px);
+        }
+        .step-badge {
+            background: var(--secondary);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+        blockquote {
+            border-left: 4px solid var(--secondary);
+            background: rgba(255, 198, 39, 0.05);
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            border-radius: 0 12px 12px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <a href="/" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Dashboard
+        </a>
+        
+        <div class="guide-content">
+            <h1>Coda MCP Ingestion Guide</h1>
+            <p>This guide explains how to set up and use the Coda Model Context Protocol (MCP) server to ingest project data (audit reports, task lists, logs) directly into Coda documents using AI-driven prompts.</p>
+
+            <h2><span class="step-badge">1</span> Prerequisites</h2>
+            <p><strong>Coda API Token:</strong></p>
+            <ul>
+                <li>Go to your <a href="https://coda.io/account" target="_blank">Coda Account Settings</a>.</li>
+                <li>Scroll to <strong>API Settings</strong> and generate a new API token.</li>
+                <li><strong>Important:</strong> Keep this token secure. You will need it for the MCP configuration in the settings tab.</li>
+            </ul>
+
+            <h2><span class="step-badge">2</span> MCP Configuration</h2>
+            <p>To enable an AI assistant to talk to Coda, add the following to your MCP configuration:</p>
+            <pre><code>{
+  "mcpServers": {
+    "Coda": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://coda.io/apis/mcp",
+        "--header",
+        "Authorization: Bearer YOUR_CODA_API_TOKEN"
+      ]
+    }
+  }
+}</code></pre>
+
+            <h2><span class="step-badge">3</span> Strategy: Two-Step Ingestion</h2>
+            <p>For reliable data ingestion, use the <strong>Two-Step Atomic Creation</strong> pattern. This prevents issues with tables appearing empty while Coda indexes them.</p>
+            
+            <h3>Step A: Create the Container (Page)</h3>
+            <blockquote>"Create a new sub-page in the Coda doc `G__Q5UKx_l` titled 'Report: [Scan Name]'. Return the page URI."</blockquote>
+
+            <h3>Step B: Create Table with Data (Atomic)</h3>
+            <blockquote>"In the new page `[Page URI]`, create a table named 'Audit Results' with columns [Page URL, Issue, Severity]. Populate it immediately with the data rows provided."</blockquote>
+
+            <h2><span class="step-badge">4</span> Implementation Details</h2>
+            <p>The Coda MCP server uses <strong>positional value arrays</strong> rather than object mapping for row insertion.</p>
+            <pre><code>// Example mapping logic
+const rows = issues.map(issue => [
+    issue.url,
+    issue.type,
+    issue.severity
+]);</code></pre>
+
+            <h2><span class="step-badge">5</span> Troubleshooting</h2>
+            <p>If tables appear but rows are missing:</p>
+            <ul>
+                <li><strong>Check Schema:</strong> Ensure you are sending <code>rows</code> as an array of arrays.</li>
+                <li><strong>Absolute URIs:</strong> The Coda MCP server requires absolute URIs: <code>coda://docs/DocID/pages/PageID</code>.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

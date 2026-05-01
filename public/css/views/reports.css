@@ -1,0 +1,100 @@
+/* Reports Filter & Table Improvements */
+.filter-row {
+    background: #FFF1F2; /* Light themed background */
+    padding: 1.5rem 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #8C1D40;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-group select, .filter-group input {
+    padding: 0.6rem 1rem;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background: white;
+    outline: none;
+}
+
+.filter-group.search {
+    margin-left: auto;
+    width: 300px;
+}
+
+.reports-table thead th {
+    background: #111827; /* Dark header */
+    color: white;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+}
+
+.reports-table tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+.reports-table td {
+    padding: 1.5rem;
+    vertical-align: middle;
+}
+
+/* Pagination placeholder styling */
+.pagination-row {
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.page-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.page-btn.nav {
+    width: auto;
+    padding: 0 1rem;
+}

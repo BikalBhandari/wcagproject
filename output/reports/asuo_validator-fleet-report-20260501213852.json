@@ -1,0 +1,23 @@
+{
+  "totalPages": 6,
+  "totalImages": 88,
+  "urlsWithIssues": 1,
+  "severity": {
+    "high": 3,
+    "medium": 5,
+    "low": 0
+  },
+  "types": {
+    "presence": 0,
+    "quality": 0,
+    "Detection": 4,
+    "Analysis": 4
+  },
+  "totalIssues": 8,
+  "agents": [
+    "altTextAgent",
+    "altQualityAgent"
+  ],
+  "generatedAt": "2026-05-01T21:38:55.358Z",
+  "codaUrl": "https://coda.io/d/_dG__Q5UKx_l/section-iIjJIitt3e"
+}

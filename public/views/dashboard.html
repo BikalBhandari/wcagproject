@@ -1,0 +1,130 @@
+<div class="view-header">
+    <div class="header-text">
+        <h2>Dashboard</h2>
+        <p>High-level overview of accessibility compliance across your network.</p>
+    </div>
+    <div class="header-actions">
+        <button class="run-btn" onclick="openWizard()">
+            <div class="play-icon-circle">
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <span>Start New Scan</span>
+        </button>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">URLs Monitored</span>
+            <div class="kpi-icon info"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+        </div>
+        <div id="kpi-total-urls" class="kpi-value">--</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Pages Audited</span>
+            <div class="kpi-icon maroon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+        </div>
+        <div id="kpi-total-pages" class="kpi-value">--</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Total Issues Found</span>
+            <div class="kpi-icon danger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+        </div>
+        <div id="kpi-total-issues" class="kpi-value">--</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">Avg. Compliance</span>
+            <div class="kpi-icon success"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+        </div>
+        <div id="kpi-avg-compliance" class="kpi-value">--</div>
+    </div>
+</div>
+
+<!-- Latest Run Summary -->
+<div id="latest-session-stats" class="session-stats-container hidden">
+    <div class="session-header">
+        <div class="header-tag">LATEST RUN</div>
+        <h3><span id="session-name">--</span></h3>
+    </div>
+    
+    <div class="session-grid">
+        <div class="session-main">
+            <div class="mini-kpi-row">
+                <div class="mini-kpi">
+                    <span class="label">Pages</span>
+                    <span id="session-sites" class="value">0</span>
+                </div>
+                <div class="mini-kpi">
+                    <span class="label">Images</span>
+                    <span id="session-images" class="value">0</span>
+                </div>
+                <div class="mini-kpi">
+                    <span class="label">Affected URLs</span>
+                    <span id="session-affected-urls" class="value danger">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="session-chart">
+            <div class="mini-chart-container">
+                <canvas id="sessionSeverityChart"></canvas>
+            </div>
+            <div class="chart-label">Severity Breakdown</div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-row">
+    <div class="chart-card compliance-chart">
+        <div class="card-header">
+            <h3>Compliance Rate (%)</h3>
+            <select class="chart-filter">
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <canvas id="complianceLineChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card issues-chart">
+        <div class="card-header">
+            <h3>Issues by Category</h3>
+        </div>
+        <div class="chart-container doughnut">
+            <canvas id="issuesDoughnutChart"></canvas>
+        </div>
+        <div class="doughnut-footer">
+            <div class="most-common">
+                <span>Most Common</span>
+                <span class="common-label">--</span>
+            </div>
+            <div id="doughnut-bar-fill" class="mini-bar-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="card-header">
+        <h3>Recent Compliance Scans</h3>
+        <a href="#" class="view-all">View All Scans</a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>SITE URL</th>
+                <th>PAGES</th>
+                <th>ISSUES</th>
+                <th>STATUS</th>
+                <th>DATE</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody id="recent-scans-tbody">
+            <!-- Dynamic content -->
+        </tbody>
+    </table>
+</div>
