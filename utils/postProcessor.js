@@ -5,9 +5,21 @@
 const rootPriority = {
     'Missing Alt Attribute': 3,
     'Empty Alt Attribute': 3,
+    'Color Contrast': 3,
+    'Keyboard Access': 3,
+    'Potential Keyboard Trap': 3,
+    'Focus Visible': 3,
+    'ARIA Misuse': 3,
+    'Target Size': 2,
+    'Focus Order': 2,
+    'Tabindex Misuse': 2,
     'EMPTY MISUSE': 2,
     'GENERIC': 1,
-    'REDUNDANT': 1
+    'REDUNDANT': 1,
+    'FILENAME': 1,
+    'TOO SHORT': 1,
+    'TOO LONG': 1,
+    'Placeholder Alt Text': 1
 };
 
 /**
@@ -31,9 +43,14 @@ const severityPriority = {
 function getElementSignature(element) {
     if (!element) return 'unknown';
 
-    // 1. If element is an <img>, extract src
+    // 1. If element is an <img>, extract src or lazy-loaded variants
     if (element.toLowerCase().includes('<img')) {
-        const srcMatch = element.match(/src=["']([^"']+)["']/i);
+        const srcMatch = 
+            element.match(/src=["']([^"']+)["']/i) ||
+            element.match(/data-src=["']([^"']+)["']/i) ||
+            element.match(/data-lazy-src=["']([^"']+)["']/i) ||
+            element.match(/data-original=["']([^"']+)["']/i);
+            
         if (srcMatch) return `img:${srcMatch[1]}`;
     }
 
@@ -133,10 +150,17 @@ function sortBySeverity(issues) {
 
 /**
  * Final post-processing pipeline.
+ * Modes:
+ * - 'qa': Preserve all valid distinct issues (default)
+ * - 'clean': Merge issues per element (current behavior)
  */
-function processIssues(issues) {
+function processIssues(issues, mode = 'qa') {
     let results = dedupeIssues(issues);
-    results = mergeIssuesByElement(results);
+
+    if (mode === 'clean') {
+        results = mergeIssuesByElement(results);
+    }
+
     results = sortBySeverity(results);
     return results;
 }

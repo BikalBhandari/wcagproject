@@ -38,5 +38,9 @@ export const api = {
     async getSettings() {
         const res = await fetch('/api/settings');
         return res.json();
+    },
+    async getWcagMap() {
+        const res = await fetch('/api/agents/wcag-map');
+        return res.json();
     }
 };

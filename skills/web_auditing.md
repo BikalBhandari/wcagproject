@@ -14,6 +14,31 @@ Alt text is categorized into four states:
 3.  **INVALID**: The `alt` text contains placeholder patterns like "image", "logo", or file extensions (e.g., "header.jpg").
 4.  **VALID**: Descriptive text that doesn't match invalid patterns.
 
+## Color Contrast Validation Logic
+Ensures text remains readable against its background (WCAG 1.4.3):
+1.  **LUMINANCE**: Calculates relative luminance for both text and background.
+2.  **RATIO**: Computes the contrast ratio.
+3.  **THRESHOLDS**:
+    - **Normal Text**: 4.5:1 minimum.
+    - **Large Text** (>=18pt or bold >=14pt): 3:1 minimum.
+
+## Interaction & Keyboard Logic
+Ensures all interactive elements are reachable and operable (WCAG 2.1.1, 2.5.8):
+1.  **KEYBOARD ACCESS**: Detects elements with click listeners that lack keyboard-focusable roles or `tabindex`.
+2.  **TARGET SIZE**: Checks that clickable targets (buttons, links) are at least 24x24px.
+3.  **TABINDEX**: Flags misuse of `tabindex > 0` (breaks natural focus order).
+
+## Focus & Navigation Logic
+Ensures users can see where they are and move through the page logically (WCAG 2.4.3, 2.4.7):
+1.  **FOCUS VISIBILITY**: Identifies elements where `outline: none` or `outline: 0` is set without a visible alternative.
+2.  **FOCUS ORDER**: Validates that the programmatic tab order matches the visual layout.
+
+## ARIA & Semantic Validation Logic
+Ensures assistive technologies receive correct information (WCAG 4.1.2):
+1.  **ARIA ROLES**: Validates that ARIA roles are used correctly and not redundantly (e.g., `role="button"` on a `<button>`).
+2.  **REQUIRED ATTRIBUTES**: Ensures specific roles have their required attributes (e.g., `role="checkbox"` must have `aria-checked`).
+3.  **HIDDEN MISUSE**: Flags `aria-hidden="true"` on elements that contain focusable children.
+
 ## Form Accessibility Validation Logic
 Form controls must be accessible to screen readers:
 1.  **LABELS**: Every input, textarea, and select must have a programmatically associated label (via `for` attribute, wrapping, or ARIA).
@@ -48,3 +73,4 @@ After the raw data is collected, the system runs an **Intelligent Post-Processin
 ## Best Practices
 - Always check both `src` and `data-src` (for lazy-loaded images).
 - Use a list of regex patterns to catch low-quality placeholder alt text.
+- When auditing contrast, consider both `color` and `background-color` styles.

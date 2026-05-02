@@ -57,4 +57,14 @@ router.post('/toggle-all', (req, res) => {
     }
 });
 
+// Get WCAG Mapping
+router.get('/wcag-map', (req, res) => {
+    try {
+        const wcagMap = require('../../utils/wcagMap');
+        res.json(wcagMap);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to read WCAG map' });
+    }
+});
+
 module.exports = router;

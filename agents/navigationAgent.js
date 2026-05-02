@@ -142,7 +142,7 @@ module.exports = {
     title: 'Navigation & Access',
     subtitle: 'Flow Agent',
     skills: ['Navigation Flow Analysis', 'ARIA Role Mapping'],
-    description: 'Maps the sequential navigation order of all interactive elements, extracting their roles and accessible names for screen reader compatibility.',
+    description: 'Order, role, and accessible name (what is read by a screen reader) for all navigable page elements are listed. Elements that do not have a function should not be listed.',
     run
 };
 

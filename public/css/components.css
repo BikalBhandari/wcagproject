@@ -251,6 +251,17 @@ td {
     border-color: #4A235A;
 }
 
+.action-btn.pdf {
+    color: #FF5722; /* PDF Orange */
+    border-color: rgba(255, 87, 34, 0.2);
+}
+
+.action-btn.pdf:hover {
+    background: #FF5722;
+    color: white;
+    border-color: #FF5722;
+}
+
 .action-btn.retry {
     background: none;
     border: none;

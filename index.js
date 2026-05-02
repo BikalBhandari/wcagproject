@@ -8,6 +8,8 @@ const urlUtils = require('./utils/urlUtils');
 const { validateIssue } = require('./utils/issueSchema');
 const { processIssues } = require('./utils/postProcessor');
 
+const { writePdfReport } = require('./reporting/pdfWriter');
+
 async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], concurrency = 10, progressCallback = null) {
     let reportName = 'audit-report.csv';
     const timestamp = urlUtils.getTimestamp();
@@ -42,7 +44,11 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         }).filter(Boolean);
 
         // 2. Dedupe, Suppress, and Sort
-        const finalIssues = processIssues(validatedIssues);
+        const finalIssues = processIssues(validatedIssues, 'qa');
+        
+        console.log('Raw issues:', rawIssues.length);
+        console.log('Validated issues:', validatedIssues.length);
+        console.log('Final issues:', finalIssues.length);
         
         console.log(`✅ Post-processing complete. ${finalIssues.length} issues remaining.`);
 
@@ -69,6 +75,29 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         // Write report (CSV — existing behavior)
         const reportPath = path.join(__dirname, 'output', 'reports', reportName);
         await writeReport(reportPath, issues);
+
+        // --- PDF GENERATION ---
+        const pdfPath = reportPath.replace('.csv', '.pdf');
+        try {
+            console.log('📄 Generating PDF report...');
+            // Calculate compliance for the PDF header
+            const pages = stats.totalPages || 1;
+            const high = stats.severity?.high || 0;
+            const medium = stats.severity?.medium || 0;
+            const low = stats.severity?.low || 0;
+            const weightedScore = (high * 15) + (medium * 5) + (low * 2);
+            const calculatedCompliance = 100 - (weightedScore / pages * 2);
+            const compliance = Math.max(0, Math.min(100, parseFloat(calculatedCompliance.toFixed(1))));
+
+            await writePdfReport(pdfPath, issues, {
+                ...stats,
+                compliance,
+                scopeName: path.basename(input || 'scan', '.json')
+            });
+            console.log('✅ PDF report complete');
+        } catch (pdfErr) {
+            console.warn(`⚠️  PDF generation failed: ${pdfErr.message}`);
+        }
 
         const scopeBaseName = path.basename(input || 'scan', '.json');
         let codaInfo = null;
@@ -117,6 +146,7 @@ module.exports = { runAudit };
 // CLI argument handling
 if (require.main === module) {
     const inputArg = process.argv[2];
-    runAudit(inputArg);
+    const agentsArg = process.argv.slice(3);
+    runAudit(inputArg, agentsArg.length > 0 ? agentsArg : undefined);
 }
 
