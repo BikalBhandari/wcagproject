@@ -40,11 +40,17 @@ function attachWcag(issue, key) {
     }));
 
     const helpUrls = rules.map(rule => `${BASE_URL}${rule.slug}`);
+    
+    // Pick the most severe impact from the rules
+    const impacts = rules.map(r => r.impact || 'moderate');
+    const impactOrder = { 'critical': 4, 'serious': 3, 'moderate': 2, 'minor': 1 };
+    const bestImpact = impacts.sort((a, b) => impactOrder[b] - impactOrder[a])[0];
 
     const enhancedIssue = {
         ...issue,
         wcag,
-        helpUrl: helpUrls.length === 1 ? helpUrls[0] : helpUrls
+        impact: bestImpact,
+        helpUrl: helpUrls.length === 1 ? helpUrls[0] : helpUrls.join(', ')
     };
 
     return normalizeSeverity(enhancedIssue);

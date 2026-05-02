@@ -59,6 +59,36 @@ function renderAgents(agents) {
             "title": "Link Text Accessibility",
             "skills": ["Accessibility"],
             "description": "Detects non-descriptive link text, empty links, and ambiguous destination mapping."
+        },
+        "contrastAgent": {
+            "title": "Color Contrast",
+            "skills": ["Visual Analysis", "Luminance Check"],
+            "description": "Detects insufficient contrast between text and background colors per WCAG 1.4.3."
+        },
+        "keyboardAgent": {
+            "title": "Keyboard Accessibility",
+            "skills": ["Interaction", "Tab Order"],
+            "description": "Detects missing keyboard access, tabindex misuse, and potential keyboard traps."
+        },
+        "focusAgent": {
+            "title": "Focus Management",
+            "skills": ["Navigation", "Focus Indicators"],
+            "description": "Detects focus visibility and focus order issues (WCAG 2.4.3, 2.4.7, 2.4.11)."
+        },
+        "ariaAgent": {
+            "title": "ARIA Validation",
+            "skills": ["Validation", "Semantics"],
+            "description": "Detects ARIA misuse, invalid roles, and violations of WAI-ARIA specifications."
+        },
+        "targetSizeAgent": {
+            "title": "Target Size",
+            "skills": ["Interaction", "Touch Accessibility"],
+            "description": "Detects small interactive targets (WCAG 2.5.8) to ensure mobile friendliness."
+        },
+        "navigationAgent": {
+            "title": "Navigation & Access",
+            "skills": ["Flow Analysis", "Semantic Mapping"],
+            "description": "Order, role, and accessible name (what is read by a screen reader) for all navigable page elements are listed. Elements that do not have a function should not be listed."
         }
     };
 

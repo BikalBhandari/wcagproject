@@ -5,6 +5,7 @@ const pLimit = pLimitLib.default || pLimitLib;
 const { getPageContext } = require('./core/auditor');
 const agentRegistry = require('./agents');
 const { scopes: SCOPES } = require('./config/scopes.config');
+const { processIssues } = require('./utils/postProcessor');
 
 const SCOPE_DATA_DIR = path.join(__dirname, 'data', 'scopes');
 
@@ -140,10 +141,14 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
         } finally {
             processedCount++;
             if (progressCallback) {
+                // Real-time deduplication for accurate progress reporting
+                const currentMerged = processIssues(allIssues, 'qa');
+                
                 progressCallback({
                     processed: processedCount,
                     total: totalCount,
-                    currentUrl: url
+                    currentUrl: url,
+                    issueCount: currentMerged.length
                 });
             }
         }

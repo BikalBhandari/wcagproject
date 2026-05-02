@@ -30,14 +30,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadData() {
     try {
-        const [scopes, agents, reports] = await Promise.all([
+        const [scopes, agents, reports, wcagMap] = await Promise.all([
             api.getScopes(),
             api.getAgents(),
-            api.getReports()
+            api.getReports(),
+            api.getWcagMap()
         ]);
         state.scopes = scopes;
         state.agents = agents;
         state.reports = reports;
+        state.wcagMap = wcagMap;
     } catch (err) {
         console.error('Initial Load Failed:', err);
     }

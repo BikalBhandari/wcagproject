@@ -49,6 +49,31 @@ module.exports = {
             "name": "navigationAgent",
             "enabled": false,
             "path": "../agents/navigationAgent.js"
+        },
+        {
+            "name": "contrastAgent",
+            "enabled": false,
+            "path": "../agents/contrastAgent.js"
+        },
+        {
+            "name": "keyboardAgent",
+            "enabled": false,
+            "path": "../agents/keyboardAgent.js"
+        },
+        {
+            "name": "focusAgent",
+            "enabled": false,
+            "path": "../agents/focusAgent.js"
+        },
+        {
+            "name": "ariaAgent",
+            "enabled": false,
+            "path": "../agents/ariaAgent.js"
+        },
+        {
+            "name": "targetSizeAgent",
+            "enabled": false,
+            "path": "../agents/targetSizeAgent.js"
         }
     ]
 };

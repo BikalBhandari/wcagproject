@@ -1035,6 +1035,37 @@ td {
     transition: width 0.4s ease;
 }
 
+.overlay-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.overlay-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.overlay-stat .label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    opacity: 0.8;
+    letter-spacing: 0.05em;
+}
+
+.overlay-stat .value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.overlay-stat .value.danger {
+    color: #FFC627; /* Gold/Yellow for visibility on maroon */
+}
+
 /* Modal Base */
 .modal {
     position: fixed;

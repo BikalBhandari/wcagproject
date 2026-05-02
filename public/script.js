@@ -129,19 +129,33 @@ socket.on('connect', () => {
     loadInitialData();
 });
 
-socket.on('auditStarted', (data) => {
-    isAuditing = true;
-    activeAuditFile = data.file;
-    auditOverlay.classList.remove('hidden');
-    overlayScopeName.textContent = `Scanning Scope: ${data.file.replace('.json', '').toUpperCase()}...`;
-    updateProgress(0);
-    updateUIForAuditingState();
-});
+    socket.on('auditStarted', (data) => {
+        isAuditing = true;
+        activeAuditFile = data.file;
+        auditOverlay.classList.remove('hidden');
+        overlayScopeName.textContent = `Scanning Scope: ${data.file.replace('.json', '').toUpperCase()}...`;
+        
+        // Reset live stats
+        const pagesCountEl = document.getElementById('overlay-pages-count');
+        const issuesCountEl = document.getElementById('overlay-issues-count');
+        if (pagesCountEl) pagesCountEl.textContent = '0';
+        if (issuesCountEl) issuesCountEl.textContent = '0';
+
+        updateProgress(0);
+        updateUIForAuditingState();
+    });
 
 socket.on('progress', (data) => {
     const percent = (data.processed / data.total) * 100;
     updateProgress(percent);
-    overlayScopeName.textContent = `Scanning ${data.processed}/${data.total} pages...`;
+    overlayScopeName.textContent = `Scanning Scope: ${activeAuditFile.replace('.json', '').toUpperCase()}`;
+    
+    // Update live stats in overlay
+    const pagesCountEl = document.getElementById('overlay-pages-count');
+    const issuesCountEl = document.getElementById('overlay-issues-count');
+    
+    if (pagesCountEl) pagesCountEl.textContent = data.processed;
+    if (issuesCountEl) issuesCountEl.textContent = data.issueCount || 0;
 });
 
 let sessionSeverityChart;
@@ -695,6 +709,15 @@ function renderAgents() {
                         "Accessibility"
                 ],
                 "description": "General WCAG checks (Temporary). This agent is being phased out in favor of specialized agents."
+        },
+        "navigationAgent": {
+                "title": "Navigation & Access",
+                "subtitle": "Flow Agent",
+                "skills": [
+                        "Flow Analysis",
+                        "Semantic Mapping"
+                ],
+                "description": "Order, role, and accessible name (what is read by a screen reader) for all navigable page elements are listed. Elements that do not have a function should not be listed."
         }
 };
     // AUDIT_INFO_END
