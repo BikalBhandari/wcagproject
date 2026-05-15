@@ -162,7 +162,6 @@ async function run(context) {
 module.exports = {
     name: 'formError',
     title: 'Form Error Accessibility',
-    description: 'Ensures form validation errors are properly communicated, associated, and accessible to assistive technologies.',
+    description: 'Checks validation states for missing or unlinked error messages, missing aria-invalid, and basic form-level error summaries.',
     run
 };
-

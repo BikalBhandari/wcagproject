@@ -10,13 +10,14 @@ The project now includes a premium web-based dashboard where you can deploy "Age
 2.  Start the dashboard: `npm run dev`
 3.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Key Features
-- **Real-time Auditing**: Deploy specialized agents to audit your site for accessibility.
-- **Scope Management**: 
-    - **New Scope**: Manually create sets of URLs for targeted audits.
-    - **Sitemap Import**: Automatically extract URLs from any public XML sitemap.
-- **Intelligent Post-Processing**: Automatically dedupes and prioritizes issues across multiple agents to ensure clean, actionable reports.
-- **Premium Reporting**: View historical data and aggregate metrics across all runs.
+### 🚀 Key Features
+
+-   **Multi-Agent Audit Fleet**: Specialized agents for Alt Text, Link Integrity, **Color Contrast**, **Keyboard Accessibility**, **Focus Visibility & Order**, **ARIA Validation**, and **Touch Target Heuristics**.
+-   **Intelligent Post-Processing**: Deduplication and priority-based merging to ensure clean, actionable reports.
+-   **WCAG 2.1 Level A/AA Mapping**: Every issue is automatically mapped to its corresponding WCAG success criterion.
+-   **Coda Integration**: One-click sync to professional Coda dashboards for team tracking.
+-   **Visual Dashboard**: Premium UI with real-time progress, compliance scores, and interactive issue filtering.
+-   **Detailed Reporting**: Export results to CSV, PDF, or interactive web views.
 
 ---
 

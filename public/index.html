@@ -19,7 +19,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -45,7 +45,7 @@
                 <span>Dashboard</span>
             </a>
             <a href="#" class="menu-item" data-view="scopes">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10s10-4.477 10-10A10 10 0 0 0 12 2z"></path><path d="M12 6v6l4 2"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
                 <span>Scopes</span>
             </a>
             <a href="#" class="menu-item" data-view="agents">
@@ -84,6 +84,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" placeholder="Search sites or agents...">
             </div>
+            <div id="scan-announcement" class="scan-announcement hidden" aria-live="polite"></div>
             <div class="top-bar-actions">
                 <div class="user-profile">
                     <div class="user-info">
@@ -112,6 +113,16 @@
             <div class="overlay-header">
                 <span id="overlay-agent-name">Scanning...</span>
             </div>
+            <div class="overlay-stats">
+                <div class="overlay-stat">
+                    <span class="label">PAGES</span>
+                    <span id="overlay-pages-count" class="value">0</span>
+                </div>
+                <div class="overlay-stat">
+                    <span class="label">ISSUES</span>
+                    <span id="overlay-issues-count" class="value danger">0</span>
+                </div>
+            </div>
             <div class="overlay-progress">
                 <div id="overlay-progress-bar" class="overlay-progress-fill" style="width: 0%;"></div>
             </div>
@@ -119,19 +130,18 @@
     </div>
 
     <!-- Scan Wizard Modal -->
-    <div id="scan-wizard-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>New Scan Wizard</h3>
-                <span class="close-modal" onclick="closeModal('scan-wizard-modal')">&times;</span>
+    <div id="scan-wizard-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scan-wizard-title">
+        <div class="modal-content wizard-modal">
+            <div class="modal-header wizard-modal-header">
+                <div class="wizard-modal-copy">
+                    <div class="wizard-kicker">Dashboard</div>
+                    <h3 id="scan-wizard-title">New Scan Wizard</h3>
+                    <p class="wizard-subtitle">Choose a scope, confirm the agents, and launch the audit.</p>
+                </div>
+                <button type="button" class="close-modal" aria-label="Close scan wizard" onclick="closeWizard()">&times;</button>
             </div>
-            <div class="modal-body">
-                <p>Wizard content coming soon...</p>
-            </div>
-            <div class="modal-footer">
-                <button class="secondary-btn" onclick="closeModal('scan-wizard-modal')">Cancel</button>
-                <button class="primary-btn">Next Step</button>
-            </div>
+            <div id="scan-wizard-body" class="wizard-body"></div>
+            <div id="scan-wizard-footer" class="modal-footer wizard-footer"></div>
         </div>
     </div>
 
@@ -156,6 +166,37 @@
                 <button class="secondary-btn" onclick="closeModal('new-scope-modal')">Cancel</button>
                 <button class="primary-btn">Create Scope</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Scope Modal -->
+    <div id="edit-scope-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Scope</h3>
+                <span class="close-modal" onclick="closeEditScopeModal()">&times;</span>
+            </div>
+            <form id="edit-scope-form">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-scope-file">
+                    <div class="form-group">
+                        <label for="edit-scope-name">Scope Name</label>
+                        <input id="edit-scope-name" type="text" placeholder="e.g. My Website" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="scope-url-header">
+                            <label>URLs</label>
+                            <button type="button" class="secondary-btn scope-add-url-btn" onclick="addEditScopeUrlRow('')">+ Add URL</button>
+                        </div>
+                        <div id="edit-scope-url-list" class="scope-url-list" aria-label="Scope URLs"></div>
+                        <p class="field-help">Add one URL per row. Remove rows as needed.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" onclick="closeEditScopeModal()">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 

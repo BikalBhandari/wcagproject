@@ -139,10 +139,9 @@ async function run(context) {
 
 module.exports = {
     name: 'navigation',
-    title: 'Navigation & Access',
-    subtitle: 'Flow Agent',
-    skills: ['Navigation Flow Analysis', 'ARIA Role Mapping'],
-    description: 'Maps the sequential navigation order of all interactive elements, extracting their roles and accessible names for screen reader compatibility.',
+    title: 'Focusable Element Flow Map',
+    subtitle: 'Heuristic Mapping Agent',
+    skills: ['Tab Order Mapping', 'ARIA Name Reporting'],
+    description: 'Lists focusable elements in DOM order with their semantic role and accessible name. This is a flow inventory, not a computed browser tab-order or interaction-state audit.',
     run
 };
-

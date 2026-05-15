@@ -1,5 +1,6 @@
 const { createObjectCsvWriter } = require('csv-writer');
 const path = require('path');
+const { formatWcag, sanitizeElement, formatTimestamp } = require('../utils/formatUtils');
 
 async function writeReport(filePath, records) {
     const csvWriter = createObjectCsvWriter({
@@ -13,13 +14,21 @@ async function writeReport(filePath, records) {
             { id: 'message', title: 'MESSAGE' },
             { id: 'severity', title: 'SEVERITY' },
             { id: 'recommendation', title: 'RECOMMENDATION' },
-            { id: 'confidence', title: 'CONFIDENCE' },
-            { id: 'requiresReview', title: 'REQUIRES_REVIEW' }
+            { id: 'wcag', title: 'WCAG' },
+            { id: 'impact', title: 'IMPACT' },
+            { id: 'helpUrl', title: 'HELP_URL' },
+            { id: 'timestamp', title: 'TIMESTAMP' }
         ]
-
     });
 
-    await csvWriter.writeRecords(records);
+    const formattedRecords = records.map(record => ({
+        ...record,
+        element: sanitizeElement(record.element || ''),
+        wcag: formatWcag(record.wcag),
+        timestamp: formatTimestamp(new Date())
+    }));
+
+    await csvWriter.writeRecords(formattedRecords);
 }
 
 module.exports = { writeReport };

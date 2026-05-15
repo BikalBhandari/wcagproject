@@ -1,4 +1,4 @@
-const BASE_URL = 'https://www.w3.org/TR/WCAG21/#';
+const BASE_URL = 'https://www.w3.org/TR/WCAG22/#';
 
 module.exports = {
     // -------------------------------------------------------------------------
@@ -9,7 +9,9 @@ module.exports = {
             criterion: '1.1.1',
             name: 'Non-text Content',
             level: 'A',
-            slug: 'non-text-content'
+            version: '2.1',
+            slug: 'non-text-content',
+            impact: 'critical'
         }
     ],
     ALT_EMPTY: [
@@ -17,7 +19,9 @@ module.exports = {
             criterion: '1.1.1',
             name: 'Non-text Content',
             level: 'A',
-            slug: 'non-text-content'
+            version: '2.1',
+            slug: 'non-text-content',
+            impact: 'serious'
         }
     ],
     ALT_PLACEHOLDER: [
@@ -25,7 +29,9 @@ module.exports = {
             criterion: '1.1.1',
             name: 'Non-text Content',
             level: 'A',
-            slug: 'non-text-content'
+            version: '2.1',
+            slug: 'non-text-content',
+            impact: 'moderate'
         }
     ],
     ALT_REDUNDANT: [
@@ -33,7 +39,9 @@ module.exports = {
             criterion: '1.1.1',
             name: 'Non-text Content',
             level: 'A',
-            slug: 'non-text-content'
+            version: '2.1',
+            slug: 'non-text-content',
+            impact: 'moderate'
         }
     ],
 
@@ -45,7 +53,9 @@ module.exports = {
             criterion: '1.3.1',
             name: 'Info and Relationships',
             level: 'A',
-            slug: 'info-and-relationships'
+            version: '2.1',
+            slug: 'info-and-relationships',
+            impact: 'serious'
         }
     ],
     LANDMARK_MISSING: [
@@ -53,13 +63,17 @@ module.exports = {
             criterion: '1.3.1',
             name: 'Info and Relationships',
             level: 'A',
-            slug: 'info-and-relationships'
+            version: '2.1',
+            slug: 'info-and-relationships',
+            impact: 'moderate'
         },
         {
             criterion: '2.4.1',
             name: 'Bypass Blocks',
             level: 'A',
-            slug: 'bypass-blocks'
+            version: '2.1',
+            slug: 'bypass-blocks',
+            impact: 'moderate'
         }
     ],
     FORM_LABEL_MISSING: [
@@ -67,27 +81,69 @@ module.exports = {
             criterion: '1.3.1',
             name: 'Info and Relationships',
             level: 'A',
+            version: '2.1',
             slug: 'info-and-relationships'
         },
         {
             criterion: '3.3.2',
             name: 'Labels or Instructions',
             level: 'A',
-            slug: 'labels-or-instructions'
+            version: '2.1',
+            slug: 'labels-or-instructions',
+            impact: 'serious'
         },
         {
             criterion: '4.1.2',
             name: 'Name, Role, Value',
             level: 'A',
-            slug: 'name-role-value'
+            version: '2.1',
+            slug: 'name-role-value',
+            impact: 'serious'
         }
     ],
-    FORM_GROUP_MISSING: [
+
+    // -------------------------------------------------------------------------
+    // 1.4 Distinguishable (IMPORTANT AA coverage missing before)
+    // -------------------------------------------------------------------------
+    COLOR_CONTRAST: [
         {
-            criterion: '1.3.1',
-            name: 'Info and Relationships',
+            criterion: '1.4.3',
+            name: 'Contrast (Minimum)',
+            level: 'AA',
+            version: '2.1',
+            slug: 'contrast-minimum',
+            impact: 'serious'
+        }
+    ],
+    TEXT_RESIZE: [
+        {
+            criterion: '1.4.4',
+            name: 'Resize Text',
+            level: 'AA',
+            version: '2.1',
+            slug: 'resize-text'
+        }
+    ],
+
+    // -------------------------------------------------------------------------
+    // 2.1 Keyboard
+    // -------------------------------------------------------------------------
+    KEYBOARD_ACCESS: [
+        {
+            criterion: '2.1.1',
+            name: 'Keyboard',
             level: 'A',
-            slug: 'info-and-relationships'
+            version: '2.1',
+            slug: 'keyboard'
+        }
+    ],
+    NO_KEYBOARD_TRAP: [
+        {
+            criterion: '2.1.2',
+            name: 'No Keyboard Trap',
+            level: 'A',
+            version: '2.1',
+            slug: 'no-keyboard-trap'
         }
     ],
 
@@ -99,7 +155,18 @@ module.exports = {
             criterion: '2.4.3',
             name: 'Focus Order',
             level: 'A',
+            version: '2.1',
             slug: 'focus-order'
+        }
+    ],
+    FOCUS_VISIBLE: [
+        {
+            criterion: '2.4.7',
+            name: 'Focus Visible',
+            level: 'AA',
+            version: '2.1',
+            slug: 'focus-visible',
+            impact: 'serious'
         }
     ],
     LINK_PURPOSE: [
@@ -107,15 +174,56 @@ module.exports = {
             criterion: '2.4.4',
             name: 'Link Purpose (In Context)',
             level: 'A',
-            slug: 'link-purpose-in-context'
+            version: '2.1',
+            slug: 'link-purpose-in-context',
+            impact: 'serious'
         }
     ],
-    HEADINGS_AND_LABELS: [
+    LINK_NAME: [
         {
-            criterion: '2.4.6',
-            name: 'Headings and Labels',
+            criterion: '4.1.2',
+            name: 'Name, Role, Value',
+            level: 'A',
+            version: '2.1',
+            slug: 'name-role-value',
+            impact: 'serious'
+        }
+    ],
+
+    // -------------------------------------------------------------------------
+    // 2.5 Input Modalities (WCAG 2.2 additions)
+    // -------------------------------------------------------------------------
+    TARGET_SIZE: [
+        {
+            criterion: '2.5.8',
+            name: 'Target Size (Minimum)',
             level: 'AA',
-            slug: 'headings-and-labels'
+            version: '2.2',
+            slug: 'target-size-minimum',
+            impact: 'moderate'
+        }
+    ],
+    DRAGGING_MOVEMENTS: [
+        {
+            criterion: '2.5.7',
+            name: 'Dragging Movements',
+            level: 'AA',
+            version: '2.2',
+            slug: 'dragging-movements'
+        }
+    ],
+
+    // -------------------------------------------------------------------------
+    // 2.4 NEW (WCAG 2.2)
+    // -------------------------------------------------------------------------
+    FOCUS_APPEARANCE: [
+        {
+            criterion: '2.4.11',
+            name: 'Focus Appearance',
+            level: 'AA',
+            version: '2.2',
+            slug: 'focus-appearance',
+            impact: 'serious'
         }
     ],
 
@@ -127,15 +235,8 @@ module.exports = {
             criterion: '3.3.1',
             name: 'Error Identification',
             level: 'A',
+            version: '2.1',
             slug: 'error-identification'
-        }
-    ],
-    LABELS_OR_INSTRUCTIONS: [
-        {
-            criterion: '3.3.2',
-            name: 'Labels or Instructions',
-            level: 'A',
-            slug: 'labels-or-instructions'
         }
     ],
     ERROR_SUGGESTION: [
@@ -143,7 +244,29 @@ module.exports = {
             criterion: '3.3.3',
             name: 'Error Suggestion',
             level: 'AA',
+            version: '2.1',
             slug: 'error-suggestion'
+        }
+    ],
+
+    // WCAG 2.2 additions
+    ACCESSIBLE_AUTHENTICATION: [
+        {
+            criterion: '3.3.7',
+            name: 'Accessible Authentication',
+            level: 'A',
+            version: '2.2',
+            slug: 'accessible-authentication'
+        }
+    ],
+
+    REDUNDANT_ENTRY: [
+        {
+            criterion: '3.3.8',
+            name: 'Redundant Entry',
+            level: 'A',
+            version: '2.2',
+            slug: 'redundant-entry'
         }
     ],
 
@@ -155,7 +278,9 @@ module.exports = {
             criterion: '4.1.2',
             name: 'Name, Role, Value',
             level: 'A',
-            slug: 'name-role-value'
+            version: '2.1',
+            slug: 'name-role-value',
+            impact: 'serious'
         }
     ],
     STATUS_MESSAGES: [
@@ -163,7 +288,9 @@ module.exports = {
             criterion: '4.1.3',
             name: 'Status Messages',
             level: 'AA',
-            slug: 'status-messages'
+            version: '2.1',
+            slug: 'status-messages',
+            impact: 'moderate'
         }
     ]
 };

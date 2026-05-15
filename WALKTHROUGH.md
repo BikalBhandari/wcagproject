@@ -32,6 +32,18 @@ Once your scope is defined, head to the **Agents** view or use the **"Run Scan"*
 - **Confirm & Run**: Review your configuration and start the audit.
 - **Real-Time Progress**: Watch the live progress bar and stats as the agents crawl your site.
 
+## 📁 Agent Categories
+The fleet is organized into specialized groups to provide comprehensive coverage:
+-   **Analysis Agents**: Deep-dive evaluators like the `contrastAgent` (Color Contrast) and `altQualityAgent` (Alt Text descriptive quality).
+-   **Interaction Agents**: Focused on usability, including `keyboardAgent` (Keyboard Access), `focusAgent` (Focus Visibility & Order), and `targetSizeAgent` (Touch Target Heuristics).
+-   **Validation Agents**: Ensure technical correctness, such as `ariaAgent` (ARIA Spec), `formAccessibilityAgent` (Labels & Groups), and `linkAgent` (Broken Links).
+
+## ⚡ The Post-Processing Pipeline
+When multiple agents audit the same page, they often identify overlapping issues on the same element. Our **Intelligent Post-Processor** (`utils/postProcessor.js`) handles this:
+1.  **Normalization**: Creates a stable signature for every element found.
+2.  **Priority Merging**: Uses a strict hierarchy to keep only the most critical "Root Issue" (e.g., *Missing Alt* > *Generic Alt*).
+3.  **Conflict Resolution**: Resolves overlapping severities to ensure the highest-priority warning is presented to the user.
+
 ---
 
 

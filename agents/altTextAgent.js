@@ -1,7 +1,34 @@
 const { attachWcag } = require('../utils/issueUtils');
 
-function extractContext($, el) {
-    const container = $(el).closest('section, article, main, aside');
+function parseBooleanSetting(value, defaultValue = false) {
+    if (value === undefined || value === null) return defaultValue;
+    if (typeof value === 'boolean') return value;
+    return !['no', 'false', '0', 'off'].includes(String(value).trim().toLowerCase());
+}
+
+function parseIntegerSetting(value, defaultValue = 1) {
+    const parsed = parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+}
+
+function findContextContainer($, el, maxDepth) {
+    let current = $(el).parent();
+    let depth = 0;
+
+    while (current.length && depth < maxDepth) {
+        if (current.is('section, article, main, aside, figure')) {
+            return current;
+        }
+
+        current = current.parent();
+        depth++;
+    }
+
+    return $(el).closest('section, article, main, aside, figure');
+}
+
+function extractContext($, el, maxDepth) {
+    const container = findContextContainer($, el, maxDepth);
 
     const heading = container.find('h1, h2, h3').first().text().trim();
     const ariaLabel = container.attr('aria-label') || '';
@@ -55,18 +82,25 @@ function generateAltRecommendation({ role, context }) {
     }
 }
 
-async function run(context) {
+async function run(context, config = {}) {
     if (context.error) return [];
 
     const { $, url } = context;
     const issues = [];
+    const ignoreDecorative = parseBooleanSetting(config.ignoreDecorative, true);
+    const scanDepth = parseIntegerSetting(config.scanDepth, 1);
 
     $('img').each((i, el) => {
         const alt = $(el).attr('alt');
         const src = $(el).attr('src') || 'unknown';
 
-        const pageContext = extractContext($, el);
+        const pageContext = extractContext($, el, scanDepth);
         const role = classifyImageRole($, el, pageContext);
+
+        if (ignoreDecorative && role === 'decorative') {
+            return;
+        }
+
         const recommendation = generateAltRecommendation({
             role,
             context: pageContext
@@ -154,6 +188,6 @@ module.exports = {
     title: 'Alt Text Presence',
     subtitle: 'Detection Agent',
     skills: ['Deep Crawling', 'Alt Text Detection'],
-    description: 'Identifies images missing alt attributes or improperly using empty alt text, ensuring WCAG 1.1.1 compliance.',
+    description: 'Identifies missing or empty alt attributes and common placeholder alt text on images, with role-based guidance for WCAG 1.1.1.',
     run
 };

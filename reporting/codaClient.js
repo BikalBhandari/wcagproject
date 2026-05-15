@@ -26,6 +26,7 @@ const COLUMN_NAMES = [
 ];
 
 const { getConfig } = require('../utils/config');
+const { formatWcag, sanitizeElement, formatTimestamp } = require('../utils/formatUtils');
 
 async function createCodaClient() {
     const config = getConfig();
@@ -80,14 +81,14 @@ function mapIssueToRow(issue) {
         String(issue.page || '').slice(0, 1000),
         String(issue.type || ''),
         String(issue.subType || ''),
-        String(issue.element || '').slice(0, 500),
+        sanitizeElement(issue.element || '').slice(0, 1000),
         String(issue.message || '').slice(0, 1000),
         String(issue.severity || ''),
         String(issue.recommendation || '').slice(0, 1000),
-        String(issue.wcag || ''),
+        formatWcag(issue.wcag),
         String(issue.impact || ''),
-        String(issue.help || '').slice(0, 500),
-        new Date().toISOString()
+        String(issue.helpUrl || '').slice(0, 500),
+        formatTimestamp(new Date())
     ];
 }
 
@@ -163,19 +164,26 @@ async function sendResultsToCoda(results, options = {}) {
 
         // 3. Insert remaining rows if any
         if (remainingRows.length > 0) {
-            console.log(`📥 Inserting ${remainingRows.length} remaining rows...`);
+            console.log(`📥 Inserting ${remainingRows.length} remaining rows in ${Math.ceil(remainingRows.length / BATCH_SIZE)} batches...`);
             for (let i = 0; i < remainingRows.length; i += BATCH_SIZE) {
                 const batch = remainingRows.slice(i, i + BATCH_SIZE);
-                console.log(`   ⏳ Batch ${Math.floor(i/BATCH_SIZE) + 1} (${batch.length} rows)...`);
-                await callTool(client, 'table_rows_manage', {
-                    uri: tableUri,
-                    data: {
-                        action: 'add',
-                        columnIds: COLUMN_NAMES,
-                        rows: batch
-                    }
-                });
-                console.log(`   ✅ Batch ${Math.floor(i/BATCH_SIZE) + 1} added`);
+                const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+                console.log(`   ⏳ Syncing Batch ${batchNum} (${batch.length} rows)...`);
+                
+                try {
+                    await callTool(client, 'table_rows_manage', {
+                        uri: tableUri,
+                        data: {
+                            action: 'add',
+                            columnIds: COLUMN_NAMES,
+                            rows: batch
+                        }
+                    });
+                    console.log(`   ✅ Batch ${batchNum} successfully added.`);
+                } catch (batchErr) {
+                    console.error(`   ❌ Failed to add Batch ${batchNum}: ${batchErr.message}`);
+                    // Continue with other batches instead of failing the whole scan
+                }
             }
         }
 
