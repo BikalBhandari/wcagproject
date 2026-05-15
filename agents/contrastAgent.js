@@ -96,16 +96,34 @@ function findInheritedStyle($, el, property) {
     return null;
 }
 
-async function run(context) {
+function parseThreshold(value, defaultValue = 4.5) {
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+}
+
+function parseSampleRate(value, defaultValue = 100) {
+    const parsed = parseInt(value, 10);
+    if (!Number.isFinite(parsed)) return defaultValue;
+    return Math.max(1, Math.min(100, parsed));
+}
+
+async function run(context, config = {}) {
     if (context.error) return [];
 
     const { $, url } = context;
     const issues = [];
+    const thresholdOverride = parseThreshold(config.threshold, 4.5);
+    const sampleRate = parseSampleRate(config.sampleRate, 100);
+    const sampleInterval = Math.max(1, Math.round(100 / sampleRate));
 
     // Target elements per requirements
     const selectors = 'p, span, a, button, li, h1, h2, h3, h4, h5, h6, label';
 
     $(selectors).each((i, el) => {
+        if (sampleRate < 100 && (i % sampleInterval) !== 0) {
+            return;
+        }
+
         // Skip elements with no text content
         const text = $(el).text().trim();
         if (!text) return;
@@ -158,7 +176,7 @@ async function run(context) {
 
         // 3. Compute Ratio
         const ratio = getContrastRatio(textColor, bgColor).toFixed(2);
-        const threshold = isLargeText ? 3 : 4.5;
+        const threshold = isLargeText ? 3 : thresholdOverride;
 
         // 4. Validate
         if (ratio < threshold) {
@@ -182,6 +200,6 @@ async function run(context) {
 module.exports = {
     name: 'contrast',
     title: 'Color Contrast',
-    description: 'Detects insufficient contrast between text and background colors.',
+    description: 'Checks text color contrast using inline and inherited style heuristics, including sampled visible text and large-text thresholds.',
     run
 };

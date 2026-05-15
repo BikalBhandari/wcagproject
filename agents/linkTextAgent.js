@@ -96,7 +96,6 @@ async function run(context) {
 module.exports = {
     name: 'linkText',
     title: 'Link Text Accessibility',
-    description: 'Detects non-descriptive link text, empty links, and ambiguous destination mapping for WCAG 2.4.4 compliance.',
+    description: 'Checks links for empty text, generic link text, and duplicate link text that points to different destinations.',
     run
 };
-

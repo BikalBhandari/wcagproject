@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coda Ingestion Guide | Accessibility Auditor</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         .guide-container {
             max-width: 900px;
@@ -22,7 +22,7 @@
             box-shadow: var(--shadow);
         }
         .guide-content h1 {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Geist', sans-serif;
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--primary);
@@ -97,7 +97,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back to Dashboard
         </a>
-        
+
         <div class="guide-content">
             <h1>Coda MCP Ingestion Guide</h1>
             <p>This guide explains how to set up and use the Coda Model Context Protocol (MCP) server to ingest project data (audit reports, task lists, logs) directly into Coda documents using AI-driven prompts.</p>
@@ -105,7 +105,7 @@
             <h2><span class="step-badge">1</span> Prerequisites</h2>
             <p><strong>Coda API Token:</strong></p>
             <ul>
-                <li>Go to your <a href="https://coda.io/account" target="_blank">Coda Account Settings</a>.</li>
+                <li>Go to your <a href="https://coda.io/account" target="_blank" rel="noreferrer">Coda Account Settings</a>.</li>
                 <li>Scroll to <strong>API Settings</strong> and generate a new API token.</li>
                 <li><strong>Important:</strong> Keep this token secure. You will need it for the MCP configuration in the settings tab.</li>
             </ul>
@@ -129,7 +129,7 @@
 
             <h2><span class="step-badge">3</span> Strategy: Two-Step Ingestion</h2>
             <p>For reliable data ingestion, use the <strong>Two-Step Atomic Creation</strong> pattern. This prevents issues with tables appearing empty while Coda indexes them.</p>
-            
+
             <h3>Step A: Create the Container (Page)</h3>
             <blockquote>"Create a new sub-page in the Coda doc `G__Q5UKx_l` titled 'Report: [Scan Name]'. Return the page URI."</blockquote>
 

@@ -8,7 +8,18 @@ const Sitemapper = require('sitemapper').default || require('sitemapper');
 const SCOPE_DATA_DIR = path.join(__dirname, '..', '..', 'data', 'scopes');
 console.log('Resolved SCOPE_DATA_DIR:', SCOPE_DATA_DIR);
 
+function scopeFileName(name) {
+    const slug = String(name || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+    return `${slug || 'scope'}.json`;
+}
+
 router.get('/', (req, res) => {
+    res.set('Cache-Control', 'no-store');
     if (!fs.existsSync(SCOPE_DATA_DIR)) {
         return res.json([]);
     }
@@ -24,9 +35,20 @@ router.get('/', (req, res) => {
             const filePath = path.join(SCOPE_DATA_DIR, f);
             const scopeBase = f.replace('.json', '').toLowerCase();
             let urlCount = 0;
+            let domain = '';
+            let urls = [];
             try {
                 const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                urls = Array.isArray(content) ? content : [];
                 urlCount = Array.isArray(content) ? content.length : 0;
+                if (urlCount > 0) {
+                    try {
+                        const url = new URL(content[0]);
+                        domain = url.hostname;
+                    } catch (e) {
+                        domain = content[0]; // Fallback to raw string if not a valid URL
+                    }
+                }
             } catch (e) {
                 console.error(`Error reading scope file ${f}:`, e);
             }
@@ -35,7 +57,7 @@ router.get('/', (req, res) => {
             let lastScan = 'Never';
             try {
                 const scopeReports = allReportFiles
-                    .filter(r => r.toLowerCase().startsWith(scopeBase + '-report') && r.endsWith('.csv'))
+                    .filter(r => r.toLowerCase().startsWith(scopeBase + '-') && r.endsWith('.csv'))
                     .map(r => {
                         const stats = fs.statSync(path.join(REPORT_DIR, r));
                         return { name: r, time: stats.mtime };
@@ -51,9 +73,11 @@ router.get('/', (req, res) => {
 
             return {
                 name: f.replace('.json', '').replace(/_/g, ' ').toUpperCase(),
+                domain: domain,
                 file: f,
                 urlCount: urlCount,
-                lastScan: lastScan
+                lastScan: lastScan,
+                urls
             };
         });
     res.json(scopes);
@@ -68,7 +92,7 @@ router.post('/', (req, res) => {
 
     console.log('Creating new scope:', { name, urls });
     
-    const fileName = name.toLowerCase().replace(/\s+/g, '_') + '.json';
+    const fileName = scopeFileName(name);
     const filePath = path.join(SCOPE_DATA_DIR, fileName);
 
     if (fs.existsSync(filePath)) {
@@ -98,7 +122,7 @@ router.post('/import-sitemap', async (req, res) => {
             return res.status(400).json({ error: 'No URLs found in sitemap' });
         }
 
-        const fileName = name.toLowerCase().replace(/\s+/g, '_') + '.json';
+        const fileName = scopeFileName(name);
         const filePath = path.join(SCOPE_DATA_DIR, fileName);
 
         if (fs.existsSync(filePath)) {
@@ -113,5 +137,76 @@ router.post('/import-sitemap', async (req, res) => {
     }
 });
 
-module.exports = router;
+router.delete('/:file', (req, res) => {
+    const file = path.basename(req.params.file || '');
 
+    if (!file || !file.endsWith('.json')) {
+        return res.status(400).json({ error: 'Invalid scope file' });
+    }
+
+    const filePath = path.join(SCOPE_DATA_DIR, file);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    try {
+        fs.unlinkSync(filePath);
+        res.json({ success: true, file });
+    } catch (e) {
+        console.error('Error deleting scope file:', e);
+        res.status(500).json({ error: 'Failed to delete scope' });
+    }
+});
+
+router.put('/:file', (req, res) => {
+    const oldFile = path.basename(req.params.file || '');
+    const { name, urls } = req.body;
+
+    if (!oldFile || !oldFile.endsWith('.json')) {
+        return res.status(400).json({ error: 'Invalid scope file' });
+    }
+
+    if (!name || !urls || !Array.isArray(urls)) {
+        return res.status(400).json({ error: 'Name and URLs array are required' });
+    }
+
+    const oldPath = path.join(SCOPE_DATA_DIR, oldFile);
+    if (!fs.existsSync(oldPath)) {
+        return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    const newFile = scopeFileName(name);
+    const newPath = path.join(SCOPE_DATA_DIR, newFile);
+    const payload = JSON.stringify(urls, null, 2);
+
+    if (newFile !== oldFile && fs.existsSync(newPath)) {
+        return res.status(409).json({ error: 'Scope with this name already exists' });
+    }
+
+    try {
+        if (newFile === oldFile) {
+            fs.writeFileSync(oldPath, payload);
+        } else {
+            const tempPath = `${newPath}.tmp`;
+            fs.writeFileSync(tempPath, payload);
+            fs.renameSync(tempPath, newPath);
+
+            try {
+                fs.unlinkSync(oldPath);
+            } catch (unlinkErr) {
+                try {
+                    fs.unlinkSync(newPath);
+                } catch (_) {}
+                throw unlinkErr;
+            }
+        }
+
+        res.json({ success: true, file: newFile });
+    } catch (e) {
+        console.error('Error updating scope file:', e);
+        res.status(500).json({ error: 'Failed to update scope' });
+    }
+});
+
+module.exports = router;

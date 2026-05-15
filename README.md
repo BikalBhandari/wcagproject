@@ -12,7 +12,7 @@ The project now includes a premium web-based dashboard where you can deploy "Age
 
 ### 🚀 Key Features
 
--   **Multi-Agent Audit Fleet**: Specialized agents for Alt Text, Link Integrity, **Color Contrast**, **Keyboard Accessibility**, **Focus Management**, **ARIA Validation**, and **Touch Target Size**.
+-   **Multi-Agent Audit Fleet**: Specialized agents for Alt Text, Link Integrity, **Color Contrast**, **Keyboard Accessibility**, **Focus Visibility & Order**, **ARIA Validation**, and **Touch Target Heuristics**.
 -   **Intelligent Post-Processing**: Deduplication and priority-based merging to ensure clean, actionable reports.
 -   **WCAG 2.1 Level A/AA Mapping**: Every issue is automatically mapped to its corresponding WCAG success criterion.
 -   **Coda Integration**: One-click sync to professional Coda dashboards for team tracking.

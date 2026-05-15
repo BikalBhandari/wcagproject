@@ -35,8 +35,8 @@ Once your scope is defined, head to the **Agents** view or use the **"Run Scan"*
 ## 📁 Agent Categories
 The fleet is organized into specialized groups to provide comprehensive coverage:
 -   **Analysis Agents**: Deep-dive evaluators like the `contrastAgent` (Color Contrast) and `altQualityAgent` (Alt Text descriptive quality).
--   **Interaction Agents**: Focused on usability, including `keyboardAgent` (Keyboard Access), `focusAgent` (Focus Indicators), and `targetSizeAgent` (Touch Targets).
--   **Validation Agents**: Ensure technical correctness, such as `ariaAgent` (ARIA Spec), `formAgent` (Labels & Groups), and `linkAgent` (Broken Links).
+-   **Interaction Agents**: Focused on usability, including `keyboardAgent` (Keyboard Access), `focusAgent` (Focus Visibility & Order), and `targetSizeAgent` (Touch Target Heuristics).
+-   **Validation Agents**: Ensure technical correctness, such as `ariaAgent` (ARIA Spec), `formAccessibilityAgent` (Labels & Groups), and `linkAgent` (Broken Links).
 
 ## ⚡ The Post-Processing Pipeline
 When multiple agents audit the same page, they often identify overlapping issues on the same element. Our **Intelligent Post-Processor** (`utils/postProcessor.js`) handles this:

@@ -117,7 +117,6 @@ async function run(context) {
 module.exports = {
     name: 'landmark',
     title: 'Landmark & Structure',
-    description: 'Validates semantic landmarks like <main>, <nav>, <header>, and <footer> to ensure proper page structure for screen readers.',
+    description: 'Checks for core landmarks like <main>, <nav>, <header>, and <footer>, including missing or duplicate landmark usage that affects screen reader navigation.',
     run
 };
-

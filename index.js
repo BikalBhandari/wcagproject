@@ -28,7 +28,7 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         }
 
         // Run the scan using the new separated logic
-        const { issues: rawIssues, stats: rawStats } = await runScan(input || 'core', agents, 10, progressCallback);
+        const { issues: rawIssues, stats: rawStats } = await runScan(input || 'core', agents, concurrency, progressCallback);
 
         // --- POST-PROCESSING PIPELINE ---
         console.log(`🛠️  Post-processing ${rawIssues.length} raw issues...`);
@@ -43,8 +43,12 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
             }
         }).filter(Boolean);
 
+        const isScanError = issue => issue.type === 'system' && issue.subType === 'Network Error';
+        const scanErrors = validatedIssues.filter(isScanError);
+        const accessibilityIssues = validatedIssues.filter(issue => !isScanError(issue));
+
         // 2. Dedupe, Suppress, and Sort
-        const finalIssues = processIssues(validatedIssues, 'qa');
+        const finalIssues = processIssues(accessibilityIssues, 'qa');
         
         console.log('Raw issues:', rawIssues.length);
         console.log('Validated issues:', validatedIssues.length);
@@ -55,6 +59,7 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         // 3. Update Stats based on processed issues
         const stats = {
             ...rawStats,
+            scanErrors: scanErrors.length,
             totalIssues: finalIssues.length,
             severity: { high: 0, medium: 0, low: 0 },
             types: {}
@@ -71,6 +76,7 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         });
 
         const issues = finalIssues;
+        const scopeBaseName = path.basename(input || 'scan', '.json');
 
         // Write report (CSV — existing behavior)
         const reportPath = path.join(__dirname, 'output', 'reports', reportName);
@@ -99,7 +105,6 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
             console.warn(`⚠️  PDF generation failed: ${pdfErr.message}`);
         }
 
-        const scopeBaseName = path.basename(input || 'scan', '.json');
         let codaInfo = null;
         // Send to Coda via MCP (non-blocking — failures do not interrupt scan)
         try {
@@ -113,10 +118,34 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
             console.warn(`⚠️  Coda upload failed: ${codaErr.message}`);
         }
 
+        // --- METADATA ENRICHMENT ---
+        let targetUrl = 'Unknown';
+        const absoluteScopePath = input && !input.startsWith('http') ? path.join(__dirname, 'data', 'scopes', input) : null;
+        
+        if (input && input.startsWith('http')) {
+            targetUrl = input;
+        } else if (absoluteScopePath && fs.existsSync(absoluteScopePath)) {
+            try {
+                const content = JSON.parse(fs.readFileSync(absoluteScopePath, 'utf8'));
+                if (Array.isArray(content) && content.length > 0) {
+                    targetUrl = content[0];
+                } else if (content.url) {
+                    targetUrl = content.url;
+                }
+            } catch (e) {
+                // Fallback to basename
+            }
+        }
+        const domain = urlUtils.getDomain(targetUrl);
+
         // Write metadata
         const metaPath = reportPath.replace('.csv', '.json');
         fs.writeFileSync(metaPath, JSON.stringify({
             ...stats,
+            name: path.basename(reportName, '.csv'), // Crucial for UI
+            scopeName: scopeBaseName,
+            targetUrl,
+            domain,
             agents, // Include list of agents in metadata
             generatedAt: new Date().toISOString(),
             codaUrl: codaInfo?.url || null
@@ -149,4 +178,3 @@ if (require.main === module) {
     const agentsArg = process.argv.slice(3);
     runAudit(inputArg, agentsArg.length > 0 ? agentsArg : undefined);
 }
-
