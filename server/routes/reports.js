@@ -6,6 +6,7 @@ const fs = require('fs');
 const REPORT_OUTPUT_DIR = path.join(__dirname, '..', '..', 'output', 'reports');
 
 router.get('/', (req, res) => {
+    res.set('Cache-Control', 'no-store');
     if (!fs.existsSync(REPORT_OUTPUT_DIR)) {
         return res.json([]);
     }

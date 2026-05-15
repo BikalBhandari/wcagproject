@@ -83,7 +83,6 @@ async function run(context) {
 module.exports = {
     name: 'headingStructure',
     title: 'Heading Structure',
-    description: 'Validates that the page has a proper heading hierarchy (one H1, no skipped levels).',
+    description: 'Checks for missing or multiple H1 headings and skipped heading levels in the visible document outline.',
     run
 };
-

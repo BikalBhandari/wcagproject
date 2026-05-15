@@ -3,77 +3,100 @@ module.exports = {
         {
             "name": "altTextAgent",
             "enabled": true,
-            "path": "../agents/altTextAgent.js"
+            "path": "../agents/altTextAgent.js",
+            "config": {
+                "scanDepth": 5
+            }
         },
         {
             "name": "altQualityAgent",
             "enabled": true,
-            "path": "../agents/altQualityAgent.js"
+            "path": "../agents/altQualityAgent.js",
+            "config": {
+                "scanFrequency": "23",
+                "priority": "Medium"
+            }
         },
         {
             "name": "formAccessibilityAgent",
             "enabled": false,
-            "path": "../agents/formAccessibilityAgent.js"
+            "path": "../agents/formAccessibilityAgent.js",
+            "config": {}
         },
         {
             "name": "formErrorAgent",
             "enabled": false,
-            "path": "../agents/formErrorAgent.js"
+            "path": "../agents/formErrorAgent.js",
+            "config": {}
         },
         {
             "name": "headingStructureAgent",
             "enabled": false,
-            "path": "../agents/headingStructureAgent.js"
+            "path": "../agents/headingStructureAgent.js",
+            "config": {}
         },
         {
             "name": "landmarkAgent",
             "enabled": false,
-            "path": "../agents/landmarkAgent.js"
+            "path": "../agents/landmarkAgent.js",
+            "config": {}
         },
         {
             "name": "linkAgent",
             "enabled": false,
-            "path": "../agents/linkAgent.js"
+            "path": "../agents/linkAgent.js",
+            "config": {}
         },
         {
             "name": "linkTextAgent",
             "enabled": false,
-            "path": "../agents/linkTextAgent.js"
+            "path": "../agents/linkTextAgent.js",
+            "config": {}
         },
         {
             "name": "wcagAgent",
             "enabled": false,
-            "path": "../agents/wcagAgent.js"
+            "path": "../agents/wcagAgent.js",
+            "config": {}
         },
         {
             "name": "navigationAgent",
             "enabled": false,
-            "path": "../agents/navigationAgent.js"
+            "path": "../agents/navigationAgent.js",
+            "config": {}
         },
         {
             "name": "contrastAgent",
             "enabled": false,
-            "path": "../agents/contrastAgent.js"
+            "path": "../agents/contrastAgent.js",
+            "config": {
+                "threshold": "4.5",
+                "sampleRate": "100"
+            }
         },
         {
             "name": "keyboardAgent",
             "enabled": false,
-            "path": "../agents/keyboardAgent.js"
+            "path": "../agents/keyboardAgent.js",
+            "config": {}
         },
         {
             "name": "focusAgent",
             "enabled": false,
-            "path": "../agents/focusAgent.js"
+            "path": "../agents/focusAgent.js",
+            "config": {}
         },
         {
             "name": "ariaAgent",
             "enabled": false,
-            "path": "../agents/ariaAgent.js"
+            "path": "../agents/ariaAgent.js",
+            "config": {}
         },
         {
             "name": "targetSizeAgent",
             "enabled": false,
-            "path": "../agents/targetSizeAgent.js"
+            "path": "../agents/targetSizeAgent.js",
+            "config": {}
         }
     ]
 };

@@ -51,7 +51,9 @@ async function run(context) {
 
 module.exports = {
     name: 'focus',
-    title: 'Focus Management',
-    description: 'Detects focus visibility and focus order issues (WCAG 2.4.3, 2.4.7, 2.4.11).',
+    title: 'Focus Visibility & Order',
+    subtitle: 'Heuristic Agent',
+    skills: ['Focus Outline Checks', 'Tab Order Heuristics'],
+    description: 'Heuristically flags inline outline suppression and positive tabindex values. It does not inspect computed styles, focus traps, or dynamic focus restoration.',
     run
 };

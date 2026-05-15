@@ -89,7 +89,9 @@ async function run(context) {
 
 module.exports = {
     name: 'targetSize',
-    title: 'Target Size',
-    description: 'Detects small interactive targets (WCAG 2.5.8).',
+    title: 'Touch Target Heuristics',
+    subtitle: 'Heuristic Agent',
+    skills: ['Inline Geometry', 'Icon-Only Detection'],
+    description: 'Flags clickable elements with inline width/height below 24px and icon-only controls that may be too small. It does not measure rendered layout or spacing between targets.',
     run
 };

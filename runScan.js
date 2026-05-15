@@ -3,11 +3,53 @@ const path = require('path');
 const pLimitLib = require('p-limit');
 const pLimit = pLimitLib.default || pLimitLib;
 const { getPageContext } = require('./core/auditor');
-const agentRegistry = require('./agents');
 const { scopes: SCOPES } = require('./config/scopes.config');
 const { processIssues } = require('./utils/postProcessor');
 
 const SCOPE_DATA_DIR = path.join(__dirname, 'data', 'scopes');
+const AGENTS_CONFIG_PATH = path.join(__dirname, 'config', 'agents.config.js');
+const confidenceRank = {
+    low: 1,
+    medium: 2,
+    high: 3
+};
+
+function loadAgentFleetConfig() {
+    try {
+        delete require.cache[require.resolve(AGENTS_CONFIG_PATH)];
+        return require(AGENTS_CONFIG_PATH);
+    } catch (err) {
+        console.warn(`⚠️  Could not read agent fleet config: ${err.message}`);
+        return { agents: [] };
+    }
+}
+
+function normalizeConfidenceFloor(value) {
+    const normalized = String(value || 'low').trim().toLowerCase();
+    if (['high', 'high only'].includes(normalized)) return 'high';
+    if (['medium', 'medium+', 'medium or higher'].includes(normalized)) return 'medium';
+    return 'low';
+}
+
+function applyAgentOutputLimits(issues, config = {}) {
+    if (!Array.isArray(issues) || issues.length === 0) return [];
+
+    const minConfidence = normalizeConfidenceFloor(config.minConfidence);
+    const minConfidenceRank = confidenceRank[minConfidence] || confidenceRank.low;
+    const maxFindings = parseInt(config.maxFindingsPerPage, 10);
+
+    let filtered = issues.filter(issue => {
+        const issueConfidence = String(issue.confidence || 'high').trim().toLowerCase();
+        const issueRank = confidenceRank[issueConfidence] || confidenceRank.high;
+        return issueRank >= minConfidenceRank;
+    });
+
+    if (Number.isFinite(maxFindings) && maxFindings > 0) {
+        filtered = filtered.slice(0, maxFindings);
+    }
+
+    return filtered;
+}
 
 /**
  * Runs a scan for a given scope using a list of audit agents.
@@ -18,11 +60,13 @@ const SCOPE_DATA_DIR = path.join(__dirname, 'data', 'scopes');
  * @returns {Promise<Array>} - All issues found.
  */
 async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 10, progressCallback = null) {
+    const agentRegistry = require('./agents');
     let urls = [];
     const stats = {
         totalPages: 0,
         totalImages: 0,
         urlsWithIssues: new Set(),
+        scanErrors: 0,
         severity: { high: 0, medium: 0, low: 0 },
         types: { presence: 0, quality: 0 }
     };
@@ -64,6 +108,10 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
     const agents = agentNames
         .map(name => agentRegistry[name])
         .filter(agent => agent != null);
+    const fleetConfig = loadAgentFleetConfig();
+    const agentConfigMap = new Map(
+        (fleetConfig.agents || []).map(agent => [agent.name, agent.config || {}])
+    );
 
     if (agents.length === 0) {
         throw new Error(`No valid agents found for: ${agentNames.join(', ')}`);
@@ -82,6 +130,7 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
     console.log(`🚀 Concurrency: ${concurrencyInt}`);
 
     const allIssues = [];
+    const isScanError = issue => issue.type === 'system' && issue.subType === 'Network Error';
 
     let processedCount = 0;
     const totalCount = urls.length;
@@ -94,12 +143,15 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
             if (context.error) {
                 allIssues.push({
                     type: 'system',
+                    subType: 'Network Error',
                     page: url,
                     element: 'N/A',
                     message: `Failed to fetch page: ${context.error}`,
                     severity: 'high',
-                    recommendation: 'Check if the URL is accessible and the server is responding.'
+                    recommendation: 'Check if the URL is accessible and the server is responding.',
+                    wcag: []
                 });
+                stats.scanErrors++;
                 stats.urlsWithIssues.add(url);
             } else {
                 stats.totalPages++;
@@ -108,10 +160,12 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
 
                 for (const agent of agents) {
                     try {
-                        const rawIssues = await agent.run(context);
-                        if (Array.isArray(rawIssues) && rawIssues.length > 0) {
+                        const agentConfig = agentConfigMap.get(agent.name) || {};
+                        const rawIssues = await agent.run(context, agentConfig);
+                        const filteredIssues = applyAgentOutputLimits(rawIssues, agentConfig);
+                        if (Array.isArray(filteredIssues) && filteredIssues.length > 0) {
                             // Inject agent name into each issue
-                            const issues = rawIssues.map(issue => ({
+                            const issues = filteredIssues.map(issue => ({
                                 ...issue,
                                 agent: agent.name || 'unknown'
                             }));
@@ -142,7 +196,7 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
             processedCount++;
             if (progressCallback) {
                 // Real-time deduplication for accurate progress reporting
-                const currentMerged = processIssues(allIssues, 'qa');
+                const currentMerged = processIssues(allIssues.filter(issue => !isScanError(issue)), 'qa');
                 
                 progressCallback({
                     processed: processedCount,
@@ -161,10 +215,9 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
         stats: {
             ...stats,
             urlsWithIssues: stats.urlsWithIssues.size,
-            totalIssues: allIssues.length
+            totalIssues: allIssues.filter(issue => !isScanError(issue)).length
         } 
     };
 }
 
 module.exports = { runScan };
-

@@ -138,6 +138,6 @@ async function run(context) {
 module.exports = {
     name: 'aria',
     title: 'ARIA Validation',
-    description: 'Detects ARIA misuse, invalid roles, and violations of WAI-ARIA specifications.',
+    description: 'Checks ARIA roles for validity, redundant native-role overrides, missing required states or properties, and aria-hidden misuse on focusable elements.',
     run
 };

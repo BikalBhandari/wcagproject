@@ -12,6 +12,8 @@ let selectedScope = null;
 let selectedAudits = [];
 let scopeViewMode = 'grid'; // Default view mode for Scopes
 let shouldSelectAllAgents = false;
+let agentSearchQuery = '';
+let agentCategoryFilter = 'all';
 
 // DOM Elements
 const viewDashboard = document.getElementById('view-dashboard');
@@ -101,6 +103,8 @@ function switchView(viewName) {
     } else if (viewName === 'scopes') {
         renderScopes();
     } else if (viewName === 'agents') {
+        agentSearchQuery = '';
+        agentCategoryFilter = 'all';
         renderAgents();
     } else if (viewName === 'reports') {
         renderReports();
@@ -633,173 +637,322 @@ function renderScopesList() {
     updateUIForAuditingState();
 }
 
+function handleAgentSearch(query) {
+    agentSearchQuery = query.toLowerCase();
+    renderAgents();
+}
+
+function filterAgentsByCategory(category) {
+    agentCategoryFilter = category;
+    
+    // Update UI chips
+    const chips = document.querySelectorAll('.filter-chip');
+    chips.forEach(chip => {
+        const chipCat = chip.getAttribute('onclick').match(/'([^']+)'/)[1];
+        chip.classList.toggle('active', chipCat === category);
+    });
+    
+    renderAgents();
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function renderAgents() {
-    // AUDIT_INFO_START
     const auditInfo = {
-        "altQualityAgent": {
-                "title": "Alt Text Quality",
-                "subtitle": "Analysis Agent",
-                "skills": [
-                        "Image Analysis",
-                        "Contextual Heuristics"
-                ],
-                "description": "Evaluates descriptive quality of alt text using contextual heuristics and accessibility best practices."
-        },
         "altTextAgent": {
-                "title": "Alt Text Presence",
-                "subtitle": "Detection Agent",
-                "skills": [
-                        "Deep Crawling",
-                        "Alt Text Detection"
-                ],
-                "description": "Identifies images missing alt attributes or improperly using empty alt text, ensuring WCAG 1.1.1 compliance."
+            "title": "Alt Text Presence",
+            "category": "detection",
+            "subtitle": "Detection Agent",
+            "skills": ["Deep Crawling", "DOM Inspection"],
+            "wcag": ["1.1.1"],
+            "description": "Identifies missing or empty alt attributes and common placeholder alt text on images, with role-based guidance for WCAG 1.1.1."
+        },
+        "altQualityAgent": {
+            "title": "Alt Text Quality",
+            "category": "analysis",
+            "subtitle": "Analysis Agent",
+            "skills": ["Contextual Analysis", "AI Heuristics"],
+            "wcag": ["1.1.1"],
+            "description": "Evaluates existing alt text for redundant phrasing, generic wording, filename-like text, and length issues using lightweight contextual heuristics."
+        },
+        "contrastAgent": {
+            "title": "Color Contrast",
+            "category": "analysis",
+            "subtitle": "Visual Agent",
+            "skills": ["Color Sampling", "Luminance Calc"],
+            "wcag": ["1.4.3", "1.4.11"],
+            "description": "Checks text color contrast using inline and inherited style heuristics, including sampled visible text and large-text thresholds."
         },
         "formAccessibilityAgent": {
-                "title": "Form Accessibility",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Validates accessible labels, required field indicators, button names, and grouped inputs per WCAG."
+            "title": "Form Structure",
+            "category": "validation",
+            "subtitle": "Audit Agent",
+            "skills": ["Label Matching", "Field Grouping"],
+            "wcag": ["1.3.1", "3.3.2", "4.1.2"],
+            "description": "Checks form controls for accessible labels and names, required-field indicators, button names, and grouped radio or checkbox sets."
         },
         "formErrorAgent": {
-                "title": "Form Error Accessibility",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Ensures form validation errors are properly communicated, associated, and accessible to assistive technologies."
+            "title": "Form Validation",
+            "category": "validation",
+            "subtitle": "Audit Agent",
+            "skills": ["Error Detection", "ARIA-Alerts"],
+            "wcag": ["3.3.1", "3.3.3"],
+            "description": "Checks validation states for missing or unlinked error messages, missing aria-invalid, and basic form-level error summaries."
+        },
+        "ariaAgent": {
+            "title": "ARIA Validation",
+            "category": "validation",
+            "subtitle": "Audit Agent",
+            "skills": ["Spec Validation", "Role Mapping"],
+            "wcag": ["4.1.2"],
+            "description": "Checks ARIA roles for validity, redundant native-role overrides, missing required states or properties, and aria-hidden misuse on focusable elements."
         },
         "headingStructureAgent": {
-                "title": "Heading Structure",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Validates that the page has a proper heading hierarchy (one H1, no skipped levels)."
+            "title": "Heading Hierarchy",
+            "category": "structure",
+            "subtitle": "Audit Agent",
+            "skills": ["Outline Analysis", "Logical Flow"],
+            "wcag": ["1.3.1", "2.4.1"],
+            "description": "Checks for missing or multiple H1 headings and skipped heading levels in the visible document outline."
         },
         "landmarkAgent": {
-                "title": "Landmark & Structure",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Validates semantic landmarks like <main>, <nav>, <header>, and <footer> to ensure proper page structure for screen readers."
+            "title": "Semantic Landmarks",
+            "category": "structure",
+            "subtitle": "Audit Agent",
+            "skills": ["Region Mapping", "Role Detection"],
+            "wcag": ["1.3.1", "2.4.1"],
+            "description": "Checks for core landmarks like <main>, <nav>, <header>, and <footer>, including missing or duplicate landmark usage that affects screen reader navigation."
         },
         "linkAgent": {
-                "title": "Link Integrity",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Validates broken internal and external links, ensuring a seamless and accessible navigation experience."
+            "title": "Link Integrity",
+            "category": "navigation",
+            "subtitle": "Audit Agent",
+            "skills": ["Link Validation", "Status Check"],
+            "wcag": ["2.4.4"],
+            "description": "Checks links for missing hrefs, javascript:void patterns, intentional control anchors, and broken or access-restricted destinations using HEAD with GET fallback where possible."
         },
         "linkTextAgent": {
-                "title": "Link Text Accessibility",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "Detects non-descriptive link text, empty links, and ambiguous destination mapping for WCAG 2.4.4 compliance."
-        },
-        "wcagAgent": {
-                "title": "WCAG Compliance (Legacy)",
-                "subtitle": "Audit Agent",
-                "skills": [
-                        "Accessibility"
-                ],
-                "description": "General WCAG checks (Temporary). This agent is being phased out in favor of specialized agents."
+            "title": "Link Clarity",
+            "category": "navigation",
+            "subtitle": "Audit Agent",
+            "skills": ["Text Analysis", "Ambiguity Check"],
+            "wcag": ["2.4.4", "2.4.9"],
+            "description": "Checks links for empty text, generic link text, and duplicate link text that points to different destinations."
         },
         "navigationAgent": {
-                "title": "Navigation & Access",
-                "subtitle": "Flow Agent",
-                "skills": [
-                        "Flow Analysis",
-                        "Semantic Mapping"
-                ],
-                "description": "Order, role, and accessible name (what is read by a screen reader) for all navigable page elements are listed. Elements that do not have a function should not be listed."
+            "title": "Focusable Element Flow Map",
+            "category": "navigation",
+            "subtitle": "Heuristic Mapping Agent",
+            "skills": ["Tab Order Mapping", "ARIA Name Reporting"],
+            "wcag": ["1.3.1", "2.4.3"],
+            "description": "Lists focusable elements in DOM order with their semantic role and accessible name. This is a flow inventory, not a computed browser tab-order or interaction-state audit."
+        },
+        "keyboardAgent": {
+            "title": "Keyboard Access",
+            "category": "interaction",
+            "subtitle": "Audit Agent",
+            "skills": ["Event Simulation", "Trap Detection"],
+            "wcag": ["2.1.1", "2.1.2"],
+            "description": "Flags onclick-only elements lacking keyboard access, positive tabindex values, and heuristic keyboard-trap patterns."
+        },
+        "focusAgent": {
+            "title": "Focus Visibility & Order",
+            "category": "interaction",
+            "subtitle": "Heuristic Agent",
+            "skills": ["Focus Outline Checks", "Tab Order Heuristics"],
+            "wcag": ["2.4.7"],
+            "description": "Heuristically flags inline outline suppression and positive tabindex values. It does not inspect computed styles, focus traps, or dynamic focus restoration."
+        },
+        "targetSizeAgent": {
+            "title": "Touch Target Heuristics",
+            "category": "interaction",
+            "subtitle": "Heuristic Agent",
+            "skills": ["Inline Geometry", "Icon-Only Detection"],
+            "wcag": ["2.5.5", "2.5.8"],
+            "description": "Flags clickable elements with inline width/height below 24px and icon-only controls that may be too small. It does not measure rendered layout or spacing between targets."
+        },
+        "wcagAgent": {
+            "title": "Legacy WCAG Stub",
+            "category": "legacy",
+            "subtitle": "Compatibility Placeholder",
+            "skills": [],
+            "wcag": ["Level A", "Level AA"],
+            "description": "Compatibility-only legacy module. It is intentionally disabled and returns no issues."
         }
-};
-    // AUDIT_INFO_END
-
-    const mockStats = {
-        "altQualityAgent": { sites: 0, images: 0, issues: 0 },
-        "altTextAgent": { sites: 0, images: 0, issues: 0 },
-        "formAccessibilityAgent": { sites: 0, images: 0, issues: 0 },
-        "formErrorAgent": { sites: 0, images: 0, issues: 0 },
-        "headingStructureAgent": { sites: 0, images: 0, issues: 0 },
-        "linkAgent": { sites: 0, images: 0, issues: 0 },
-        "wcagAgent": { sites: 0, images: 0, issues: 0 },
-        "documentationAgent": { sites: 0, images: 0, issues: 0 }
     };
 
-    agentsList.innerHTML = agents.map(agent => {
-        const info = auditInfo[agent.name] || { title: agent.name.toUpperCase(), subtitle: 'Specialized Agent', skills: ['Audit'], description: 'Specialized accessibility audit agent for system analysis.' };
-        const stats = mockStats[agent.name] || { sites: 0, images: 0, issues: 0 };
-        const status = agent.enabled ? 'ACTIVE' : (stats.sites > 0 ? 'IDLE' : 'OFFLINE');
-        const statusClass = status.toLowerCase();
+    const mockStats = {
+        "altQualityAgent": { sites: 12, images: 450, issues: 2, coverage: 94 },
+        "altTextAgent": { sites: 12, images: 450, issues: 15, coverage: 100 },
+        "contrastAgent": { sites: 8, images: 0, issues: 24, coverage: 88 },
+        "formAccessibilityAgent": { sites: 8, images: 0, issues: 5, coverage: 92 },
+        "formErrorAgent": { sites: 8, images: 0, issues: 1, coverage: 95 },
+        "headingStructureAgent": { sites: 15, images: 0, issues: 0, coverage: 100 },
+        "linkAgent": { sites: 20, images: 0, issues: 12, coverage: 98 },
+        "navigationAgent": { sites: 10, images: 0, issues: 3, coverage: 90 },
+        "wcagAgent": { sites: 5, images: 0, issues: 0, coverage: 85 }
+    };
 
-        return `
-            <div class="audit-card ${status === 'ACTIVE' ? 'is-active' : ''}">
-                <div class="agent-card-header">
-                    <div class="agent-icon-box ${status === 'OFFLINE' ? 'offline' : ''}">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-                        <span class="agent-status-dot ${statusClass}"></span>
-                    </div>
-                    <div class="agent-title-group">
-                        <h3>${info.title}</h3>
-                        <div class="agent-status-text">
-                            <span class="status-dot"></span> ${status}
-                        </div>
-                    </div>
-                    <div class="agent-info-tip" data-tooltip="${info.description}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </div>
-                </div>
+    // Filter agents
+    const filteredAgents = agents.filter(agent => {
+        const info = auditInfo[agent.name] || {};
+        const matchesSearch = !agentSearchQuery || 
+            (info.title && info.title.toLowerCase().includes(agentSearchQuery)) ||
+            (info.description && info.description.toLowerCase().includes(agentSearchQuery)) ||
+            (info.skills && info.skills.some(s => s.toLowerCase().includes(agentSearchQuery)));
+            
+        const matchesCategory = agentCategoryFilter === 'all' || info.category === agentCategoryFilter;
+        
+        return matchesSearch && matchesCategory;
+    });
 
-                <div class="agent-stats-row">
-                    <div class="stat-item">
-                        <span class="stat-label">Sites</span>
-                        <span class="stat-value">${stats.sites}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Images</span>
-                        <span class="stat-value">${stats.images}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Issues</span>
-                        <span class="stat-value ${stats.issues > 0 ? 'danger' : ''}">${stats.issues}</span>
-                    </div>
-                </div>
+    // Update Fleet Stats if they exist in DOM
+    const activeCount = agents.filter(a => a.enabled).length;
+    const totalCount = agents.length;
+    const activeAgentsEl = document.getElementById('stat-active-agents');
+    const totalAgentsEl = document.getElementById('stat-total-agents');
+    const fleetHealthEl = document.getElementById('stat-fleet-health');
+    
+    if (activeAgentsEl) activeAgentsEl.textContent = activeCount;
+    if (totalAgentsEl) totalAgentsEl.textContent = totalCount;
+    if (fleetHealthEl) {
+        const health = totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0;
+        fleetHealthEl.textContent = `${health}%`;
+    }
 
-                <div class="core-skills-section">
-                    <h4>Core Skills</h4>
-                    <div class="skills-cloud">
-                        ${info.skills.map(skill => `
-                            <span class="skill-tag">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                                ${skill}
-                            </span>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <div class="agent-card-actions">
-                    ${agent.enabled ? `
-                        <button class="main-action turn-off-btn" onclick="toggleAgent('${agent.name}', false)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-                            Turn Off
-                        </button>
-                    ` : `
-                        <button class="main-action turn-on-btn" onclick="toggleAgent('${agent.name}', true)">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-                            Turn On
-                        </button>
-                    `}
-                </div>
+    if (filteredAgents.length === 0) {
+        agentsList.innerHTML = `
+            <div class="no-results">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <h3>No agents found</h3>
+                <p>Try adjusting your search or category filter.</p>
             </div>
         `;
-    }).join('');
+        return;
+    }
+
+    const categories = [
+        { id: 'detection', name: 'Detection', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+        { id: 'analysis', name: 'Analysis', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>' },
+        { id: 'validation', name: 'Validation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' },
+        { id: 'structure', name: 'Structure', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>' },
+        { id: 'interaction', name: 'Interaction', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4l7 16 2.2-6.4L20 11 4 4z"></path><path d="M14 14l4 4"></path></svg>' },
+        { id: 'navigation', name: 'Navigation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' },
+        { id: 'legacy', name: 'Legacy', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 8V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><rect x="1" y="3" width="22" height="5" rx="2"/><line x1="10" y1="12" x2="14" y2="12"/></svg>' }
+    ];
+
+    let html = '';
+
+    if (agentCategoryFilter === 'all' && !agentSearchQuery) {
+        categories.forEach(cat => {
+            const catAgents = filteredAgents.filter(a => (auditInfo[a.name] || {}).category === cat.id);
+            if (catAgents.length > 0) {
+                html += `
+                    <div class="category-group" data-category="${cat.id}">
+                        <div class="category-header">
+                            <div class="cat-icon-wrap">${cat.icon}</div>
+                            <span class="category-title">${cat.name}</span>
+                            <span class="category-count">${catAgents.length} Agents</span>
+                        </div>
+                        <div class="audits-list-grid">
+                            ${catAgents.map(agent => renderAgentCard(agent, auditInfo, mockStats)).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        html = `
+            <div class="audits-list-grid">
+                ${filteredAgents.map(agent => renderAgentCard(agent, auditInfo, mockStats)).join('')}
+            </div>
+        `;
+    }
+
+    agentsList.innerHTML = html;
+    updateUIForAuditingState();
+}
+
+function renderAgentCard(agent, auditInfo, mockStats) {
+    const info = auditInfo[agent.name] || { 
+        title: agent.name.toUpperCase(), 
+        category: 'legacy',
+        subtitle: 'Specialized Agent', 
+        skills: ['Audit'], 
+        wcag: [],
+        description: 'Specialized accessibility audit agent.' 
+    };
+    const stats = mockStats[agent.name] || { sites: 0, images: 0, issues: 0, coverage: 0 };
+    const status = agent.enabled ? 'ACTIVE' : (stats.sites > 0 ? 'IDLE' : 'OFFLINE');
+    const statusClass = status.toLowerCase();
+    const safeTitle = escapeHTML(info.title);
+    const safeDescription = escapeHTML(info.description);
+    const safeSkills = (info.skills || []).map(skill => escapeHTML(skill));
+    const safeCategory = escapeHTML(info.category);
+    const safeWcag = (info.wcag || []).map(w => escapeHTML(w));
+
+    return `
+        <div class="audit-card ${status === 'ACTIVE' ? 'is-active' : ''}" data-category="${safeCategory}">
+            <div class="agent-card-header">
+                <div class="agent-icon-box ${statusClass}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    <span class="agent-status-dot ${statusClass}"></span>
+                </div>
+                <div class="agent-title-group">
+                    <div class="agent-cat-label">${safeCategory.toUpperCase()}</div>
+                    <h3>${safeTitle}</h3>
+                </div>
+                <div class="agent-toggle-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" ${agent.enabled ? 'checked' : ''} onchange="toggleAgent('${agent.name}', this.checked)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="agent-description">
+                ${safeDescription}
+            </div>
+
+            <div class="agent-skills-row">
+                ${safeSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+            </div>
+
+            <div class="agent-metrics">
+                <div class="metric">
+                    <span class="m-label">Yield</span>
+                    <span class="m-value ${stats.issues > 10 ? 'danger' : ''}">${stats.issues}</span>
+                </div>
+                <div class="metric">
+                    <span class="m-label">Coverage</span>
+                    <span class="m-value">${stats.coverage}%</span>
+                </div>
+                <div class="metric">
+                    <span class="m-label">WCAG</span>
+                    <div class="wcag-badges">
+                        ${safeWcag.map(w => `<span class="wcag-badge">${w}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="agent-footer">
+                <div class="agent-status-indicator ${statusClass}">
+                    <span class="pulse-dot"></span>
+                    ${status}
+                </div>
+                <button class="configure-btn" onclick="alert('Configuration for ${info.title} coming soon')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 async function toggleAgent(name, enabled) {
@@ -1184,4 +1337,3 @@ function togglePassword(id) {
     const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
     input.setAttribute('type', type);
 }
-

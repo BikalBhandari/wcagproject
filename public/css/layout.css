@@ -31,7 +31,7 @@
 }
 
 .brand-text h1 {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Geist', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     line-height: 1;
@@ -98,6 +98,11 @@
     margin-bottom: 0.5rem;
 }
 
+.mini-status.is-live {
+    color: var(--secondary);
+    text-shadow: 0 0 12px rgba(255, 198, 39, 0.2);
+}
+
 .mini-progress-bg {
     height: 4px;
     background: rgba(255, 255, 255, 0.1);
@@ -109,6 +114,11 @@
     height: 100%;
     background: var(--secondary);
     transition: width 0.4s ease;
+}
+
+.mini-progress-fill.is-live {
+    background: linear-gradient(90deg, var(--secondary), #ffe07b);
+    box-shadow: 0 0 16px rgba(255, 198, 39, 0.35);
 }
 
 .help-btn {
@@ -159,6 +169,32 @@
     width: 100%;
     font-size: 0.9rem;
     color: var(--text-main);
+}
+
+.scan-announcement {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    margin: 0 1rem;
+}
+
+.scan-announcement::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--warning);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    animation: announcementPulse 1.5s infinite;
+    flex-shrink: 0;
 }
 
 .top-bar-actions {
@@ -263,4 +299,35 @@
 .header-actions {
     display: flex;
     gap: 1rem;
+}
+
+@keyframes announcementPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    }
+}
+
+@media (max-width: 960px) {
+    .top-bar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 1rem 1.25rem;
+        gap: 0.75rem;
+    }
+
+    .scan-announcement {
+        order: 3;
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+    }
 }

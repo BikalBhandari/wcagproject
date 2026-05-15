@@ -17,6 +17,15 @@ const urlUtils = {
             .replace(/\..+/, '')
             .replace(/:/g, '')
             .replace(/-/g, '');
+    },
+
+    getDomain(url) {
+        try {
+            const parsed = new URL(url);
+            return parsed.hostname;
+        } catch (e) {
+            return url;
+        }
     }
 };
 

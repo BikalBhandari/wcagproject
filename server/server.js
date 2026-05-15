@@ -40,14 +40,10 @@ app.use('/api/settings', settingsRouter);
 // Serve the CSV reports from the output directory
 app.use('/reports', express.static(REPORT_OUTPUT_DIR));
 
-// Serve the Coda Ingestion Guide
-app.get('/api/docs/coda-guide', (req, res) => {
-    const guidePath = path.join(__dirname, '..', 'coda_mcp_ingestion_guide.md');
-    fs.readFile(guidePath, 'utf8', (err, data) => {
-        if (err) return res.status(404).send('Guide not found');
-        res.setHeader('Content-Type', 'text/markdown');
-        res.send(data);
-    });
+// Serve the Coda Ingestion Guide as a real HTML page
+app.use('/guide', express.static(path.join(__dirname, '..', 'public', 'guide')));
+app.get(['/guide', '/api/docs/coda-guide'], (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'guide', 'index.html'));
 });
 
 
@@ -61,9 +57,21 @@ io.on('connection', (socket) => {
         // If no agents provided, use the ones enabled in the fleet config
         if (!agents || agents.length === 0) {
             try {
-                // Clear cache for fresh config
+                // Clear cache for fresh config and registry
                 const configPath = path.join(__dirname, '..', 'config', 'agents.config.js');
+                const registryPath = path.join(__dirname, '..', 'agents', 'index.js');
+                
                 delete require.cache[require.resolve(configPath)];
+                delete require.cache[require.resolve(registryPath)];
+                
+                // Also clear cache for all files in the agents directory to be safe
+                const agentsDir = path.join(__dirname, '..', 'agents');
+                fs.readdirSync(agentsDir).forEach(file => {
+                    if (file.endsWith('.js')) {
+                        delete require.cache[require.resolve(path.join(agentsDir, file))];
+                    }
+                });
+
                 const agentsConfig = require(configPath);
                 
                 agents = agentsConfig.agents
@@ -83,6 +91,13 @@ io.on('connection', (socket) => {
 
         if (agents.length === 0) {
             return socket.emit('auditError', { error: 'No agents are currently enabled. Please turn on at least one agent in the Agents tab.' });
+        }
+
+        // Validate scope file existence
+        const scopePath = path.join(__dirname, '..', 'data', 'scopes', file);
+        if (!fs.existsSync(scopePath)) {
+            console.error(`Rejected audit: Scope file not found: ${scopePath}`);
+            return socket.emit('auditError', { error: `Scope file '${file}' not found. Please select a valid scope.` });
         }
 
         const { getConfig } = require('../utils/config');

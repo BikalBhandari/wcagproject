@@ -224,6 +224,6 @@ async function run(context) {
 module.exports = {
     name: 'formAccessibility',
     title: 'Form Accessibility',
-    description: 'Validates accessible labels, required field indicators, button names, and grouped inputs per WCAG.',
+    description: 'Checks form controls for accessible labels and names, required-field indicators, button names, and grouped radio or checkbox sets.',
     run
 };

@@ -213,6 +213,6 @@ module.exports = {
     title: 'Alt Text Quality',
     subtitle: 'Analysis Agent',
     skills: ['Image Analysis', 'Contextual Heuristics'],
-    description: 'Evaluates descriptive quality of alt text using contextual heuristics and accessibility best practices.',
+    description: 'Evaluates existing alt text for redundant phrasing, generic wording, filename-like text, and length issues using lightweight contextual heuristics.',
     run
 };

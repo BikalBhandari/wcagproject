@@ -4,6 +4,8 @@ export const state = {
     reports: [],
     isAuditing: false,
     activeAuditFile: null,
+    scanProgress: 0,
+    scanProgressText: '',
     currentView: 'dashboard',
     wcagMap: {}
 };
