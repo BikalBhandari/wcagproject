@@ -7,12 +7,19 @@ const { sendResultsToCoda } = require('./reporting/codaClient');
 const urlUtils = require('./utils/urlUtils');
 const { validateIssue } = require('./utils/issueSchema');
 const { processIssues } = require('./utils/postProcessor');
+const { createLogger } = require('./utils/logger');
+const { ensureDir } = require('./utils/runtimeStore');
+const { getConfig } = require('./utils/config');
 
 const { writePdfReport } = require('./reporting/pdfWriter');
+const logger = createLogger('audit');
+const REPORTS_DIR = path.join(__dirname, 'output', 'reports');
 
 async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], concurrency = 10, progressCallback = null) {
     let reportName = 'audit-report.csv';
     const timestamp = urlUtils.getTimestamp();
+    const startedAt = Date.now();
+    const runtimeConfig = getConfig();
 
     try {
         // Resolve report name based on input and agents
@@ -28,10 +35,16 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         }
 
         // Run the scan using the new separated logic
-        const { issues: rawIssues, stats: rawStats } = await runScan(input || 'core', agents, concurrency, progressCallback);
+        const { issues: rawIssues, stats: rawStats } = await runScan(
+            input || 'core',
+            agents,
+            concurrency,
+            progressCallback,
+            { timeout: runtimeConfig.timeout }
+        );
 
         // --- POST-PROCESSING PIPELINE ---
-        console.log(`🛠️  Post-processing ${rawIssues.length} raw issues...`);
+        logger.info('Post-processing raw issues', { rawIssues: rawIssues.length });
         
         // 1. Validate Schema
         const validatedIssues = rawIssues.map(issue => {
@@ -50,11 +63,11 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         // 2. Dedupe, Suppress, and Sort
         const finalIssues = processIssues(accessibilityIssues, 'qa');
         
-        console.log('Raw issues:', rawIssues.length);
-        console.log('Validated issues:', validatedIssues.length);
-        console.log('Final issues:', finalIssues.length);
-        
-        console.log(`✅ Post-processing complete. ${finalIssues.length} issues remaining.`);
+        logger.info('Post-processing complete', {
+            rawIssues: rawIssues.length,
+            validatedIssues: validatedIssues.length,
+            finalIssues: finalIssues.length
+        });
 
         // 3. Update Stats based on processed issues
         const stats = {
@@ -79,13 +92,18 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         const scopeBaseName = path.basename(input || 'scan', '.json');
 
         // Write report (CSV — existing behavior)
-        const reportPath = path.join(__dirname, 'output', 'reports', reportName);
+        ensureDir();
+        if (!fs.existsSync(REPORTS_DIR)) {
+            fs.mkdirSync(REPORTS_DIR, { recursive: true });
+        }
+
+        const reportPath = path.join(REPORTS_DIR, reportName);
         await writeReport(reportPath, issues);
 
         // --- PDF GENERATION ---
         const pdfPath = reportPath.replace('.csv', '.pdf');
         try {
-            console.log('📄 Generating PDF report...');
+            logger.info('Generating PDF report');
             // Calculate compliance for the PDF header
             const pages = stats.totalPages || 1;
             const high = stats.severity?.high || 0;
@@ -100,22 +118,22 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
                 compliance,
                 scopeName: path.basename(input || 'scan', '.json')
             });
-            console.log('✅ PDF report complete');
+            logger.info('PDF report complete');
         } catch (pdfErr) {
-            console.warn(`⚠️  PDF generation failed: ${pdfErr.message}`);
+            logger.warn('PDF generation failed', pdfErr);
         }
 
         let codaInfo = null;
         // Send to Coda via MCP (non-blocking — failures do not interrupt scan)
         try {
-            console.log('📤 Sending results to Coda...');
+            logger.info('Sending results to Coda');
             codaInfo = await sendResultsToCoda(issues, {
                 scanName: scopeBaseName,
                 folderName: 'Accessibility Audits'
             });
-            console.log('✅ Coda upload complete');
+            logger.info('Coda upload complete', { url: codaInfo?.url || null });
         } catch (codaErr) {
-            console.warn(`⚠️  Coda upload failed: ${codaErr.message}`);
+            logger.warn('Coda upload failed', codaErr);
         }
 
         // --- METADATA ENRICHMENT ---
@@ -138,6 +156,9 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
         }
         const domain = urlUtils.getDomain(targetUrl);
 
+        const completedAt = Date.now();
+        const durationMs = Math.max(0, completedAt - startedAt);
+
         // Write metadata
         const metaPath = reportPath.replace('.csv', '.json');
         fs.writeFileSync(metaPath, JSON.stringify({
@@ -147,6 +168,9 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
             targetUrl,
             domain,
             agents, // Include list of agents in metadata
+            startedAt: new Date(startedAt).toISOString(),
+            completedAt: new Date(completedAt).toISOString(),
+            durationMs,
             generatedAt: new Date().toISOString(),
             codaUrl: codaInfo?.url || null
         }, null, 2));
@@ -161,11 +185,12 @@ async function runAudit(input, agents = ['altTextAgent', 'altQualityAgent'], con
             stats: {
                 ...stats,
                 name: path.basename(reportName, '.csv'),
+                durationMs,
                 codaUrl: codaInfo?.url || null
             }
         };
     } catch (error) {
-        console.error('❌ Audit failed:', error.message);
+        logger.error('Audit failed', error);
         return { error: error.message };
     }
 }

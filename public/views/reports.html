@@ -1,22 +1,22 @@
 <div class="view-header">
     <div class="header-text">
-        <h2>Audit Reports</h2>
-        <p>History of all crawl runs and compliance assessments.</p>
+        <h2>Run History</h2>
+        <p>Recent scans and exported results.</p>
     </div>
 </div>
 
 <div class="table-card">
     <div class="filter-row">
         <div class="filter-group">
-            <label>STATUS</label>
+            <label>Status</label>
             <select><option>All Statuses</option></select>
         </div>
         <div class="filter-group">
-            <label>DATE RANGE</label>
+            <label>Date range</label>
             <select><option>Last 30 Days</option></select>
         </div>
         <div class="filter-group search">
-            <label>DOMAIN SEARCH</label>
+            <label>Scope search</label>
             <input type="text" placeholder="e.g. global.com">
         </div>
     </div>
@@ -25,13 +25,13 @@
             <tr>
                 <th>RUN ID</th>
                 <th>DATE/TIME</th>
-                <th>AUDIT SCOPE</th>
-                <th>AGENT FLEET</th>
+                <th>SCOPE</th>
+                <th>AGENTS</th>
                 <th>COMPLIANCE</th>
-                <th>ISSUES FOUND</th>
-                <th>STANDARDS</th>
+                <th>ISSUES</th>
+                <th>RULES</th>
                 <th>STATUS</th>
-                <th>ACTIONS</th>
+                <th>FILES</th>
             </tr>
         </thead>
         <tbody id="audit-reports-tbody">

@@ -8,9 +8,9 @@ const domUtils = require('../utils/domUtils');
  * @param {string} url 
  * @returns {Promise<Object>} { url, $, html } or { url, error }
  */
-async function getPageContext(url) {
+async function getPageContext(url, options = {}) {
     try {
-        const response = await httpClient.get(url);
+        const response = await httpClient.get(url, { timeout: options.timeout || 15000 });
         const $ = domUtils.load(response.data);
         
         return {

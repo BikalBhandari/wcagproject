@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
-const path = require('path');
-const { formatWcag, sanitizeElement, formatTimestamp } = require('../utils/formatUtils');
+const { formatWcag, sanitizeElement, formatTimestamp, escapeHtml } = require('../utils/formatUtils');
 
 /**
  * Generates a premium PDF report from audit results.
@@ -9,35 +8,43 @@ const { formatWcag, sanitizeElement, formatTimestamp } = require('../utils/forma
  * @param {Object} meta - Metadata about the scan.
  */
 async function writePdfReport(filePath, records, meta = {}) {
-    const browser = await puppeteer.launch({
+    const launchOptions = {
         headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    
-    const page = await browser.newPage();
-    
-    const formattedRecords = records.map(record => ({
-        ...record,
-        element: sanitizeElement(record.element || ''),
-        wcag: formatWcag(record.wcag),
-        timestamp: formatTimestamp(new Date())
-    }));
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROMIUM_PATH || undefined
+    };
 
-    const htmlContent = generateHtml(formattedRecords, meta);
-    
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    
-    await page.pdf({
-        path: filePath,
-        format: 'A4',
-        margin: { top: '40px', right: '40px', bottom: '40px', left: '40px' },
-        printBackground: true,
-        displayHeaderFooter: true,
-        headerTemplate: '<div style="font-size: 10px; width: 100%; text-align: center; color: #888;">Accessibility Audit Report</div>',
-        footerTemplate: '<div style="font-size: 10px; width: 100%; text-align: center; color: #888;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>'
-    });
+    if (process.env.PUPPETEER_NO_SANDBOX === 'true') {
+        launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'];
+    }
 
-    await browser.close();
+    const browser = await puppeteer.launch(launchOptions);
+
+    try {
+        const page = await browser.newPage();
+
+        const formattedRecords = records.map(record => ({
+            ...record,
+            element: sanitizeElement(record.element || ''),
+            wcag: formatWcag(record.wcag),
+            timestamp: formatTimestamp(new Date())
+        }));
+
+        const htmlContent = generateHtml(formattedRecords, meta);
+
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+        await page.pdf({
+            path: filePath,
+            format: 'A4',
+            margin: { top: '40px', right: '40px', bottom: '40px', left: '40px' },
+            printBackground: true,
+            displayHeaderFooter: true,
+            headerTemplate: '<div style="font-size: 10px; width: 100%; text-align: center; color: #888;">Accessibility Audit Report</div>',
+            footerTemplate: '<div style="font-size: 10px; width: 100%; text-align: center; color: #888;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>'
+        });
+    } finally {
+        await browser.close();
+    }
 }
 
 function generateHtml(records, meta) {
@@ -78,8 +85,8 @@ function generateHtml(records, meta) {
         <div class="header">
             <div class="brand">WCAG Audit Report</div>
             <div class="meta-info">
-                <div>Generated: ${timestamp}</div>
-                <div>Target: ${meta.scopeName || 'Custom Scan'}</div>
+                <div>Generated: ${escapeHtml(timestamp)}</div>
+                <div>Target: ${escapeHtml(meta.scopeName || 'Custom Scan')}</div>
             </div>
         </div>
 
@@ -110,21 +117,21 @@ function generateHtml(records, meta) {
             </thead>
             <tbody>
                 ${records.map(r => `
-                    <tr>
-                        <td>
-                            <div class="wcag-tag">${r.wcag}</div>
-                            <div style="font-size: 9px; color: #888; margin-top: 4px;">Impact: ${r.impact || 'moderate'}</div>
+            <tr>
+                <td>
+                    <div class="wcag-tag">${escapeHtml(r.wcag)}</div>
+                    <div style="font-size: 9px; color: #888; margin-top: 4px;">Impact: ${escapeHtml(r.impact || 'moderate')}</div>
                         </td>
                         <td>
-                            <strong>${r.subType}</strong>
-                            <div style="margin-top: 4px;">${r.message}</div>
-                            <code class="element-code">${r.element.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>
-                            <div style="font-size: 9px; color: #666; margin-top: 4px;">URL: ${r.page}</div>
+                            <strong>${escapeHtml(r.subType)}</strong>
+                            <div style="margin-top: 4px;">${escapeHtml(r.message)}</div>
+                            <code class="element-code">${escapeHtml(r.element)}</code>
+                            <div style="font-size: 9px; color: #666; margin-top: 4px;">URL: ${escapeHtml(r.page)}</div>
                         </td>
                         <td>
-                            <span class="severity-badge sev-${r.severity}">${r.severity}</span>
+                            <span class="severity-badge sev-${escapeHtml(r.severity)}">${escapeHtml(r.severity)}</span>
                         </td>
-                        <td>${r.recommendation || 'No specific recommendation provided.'}</td>
+                        <td>${escapeHtml(r.recommendation || 'No specific recommendation provided.')}</td>
                     </tr>
                 `).join('')}
             </tbody>

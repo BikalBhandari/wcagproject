@@ -1,80 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const { readSettings, readSecrets, writeSettings, writeSecrets, getMergedSettings } = require('../../utils/settingsStore');
+const { getConfig } = require('../../utils/config');
+const { validateSettingsPayload } = require('../../utils/requestValidation');
+const { createRateLimit } = require('../../utils/rateLimit');
+const { createLogger } = require('../../utils/logger');
 
-const SETTINGS_FILE = path.join(__dirname, '../../data/settings.json');
+const settingsWriteLimit = createRateLimit({ limit: 20, windowMs: 5 * 60 * 1000, keyPrefix: 'settings-write' });
+const auditTestLimit = createRateLimit({ limit: 5, windowMs: 5 * 60 * 1000, keyPrefix: 'settings-test' });
+const logger = createLogger('settings');
 
 // Get current settings
 router.get('/', (req, res) => {
     try {
-        if (!fs.existsSync(SETTINGS_FILE)) {
-            return res.json({});
-        }
-        const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
-        res.json(JSON.parse(data));
+        res.json(readSettings());
     } catch (err) {
-        console.error('Error reading settings:', err);
+        logger.error('Error reading settings', err);
         res.status(500).json({ error: 'Failed to read settings' });
     }
 });
 
 // Update settings
-router.post('/', (req, res) => {
+router.post('/', settingsWriteLimit, (req, res) => {
     try {
-        const newSettings = req.body;
-        
-        // Ensure data directory exists
-        const dataDir = path.dirname(SETTINGS_FILE);
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
+        const payloadResult = validateSettingsPayload(req.body);
+        if (!payloadResult.valid) {
+            return res.status(400).json({ error: payloadResult.error });
         }
 
-        // Read existing settings to merge (optional, but safer)
-        let currentSettings = {};
-        if (fs.existsSync(SETTINGS_FILE)) {
-            currentSettings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+        const { codaToken, ...rest } = payloadResult.value;
+        const mergedSettings = getMergedSettings(rest);
+        const publicSettings = { ...mergedSettings };
+        delete publicSettings.codaToken;
+        writeSettings(publicSettings);
+        if (codaToken !== undefined) {
+            writeSecrets({ ...readSecrets(), codaToken });
         }
-
-        const mergedSettings = { ...currentSettings, ...newSettings };
-        
-        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(mergedSettings, null, 2));
-        res.json({ success: true, settings: mergedSettings });
+        res.json({
+            success: true,
+            settings: {
+                ...publicSettings,
+                hasCodaToken: Boolean(codaToken !== undefined ? codaToken : readSecrets().codaToken)
+            }
+        });
     } catch (err) {
-        console.error('Error saving settings:', err);
+        logger.error('Error saving settings', err);
         res.status(500).json({ error: 'Failed to save settings' });
     }
 });
 
 // Test Coda connection
-router.post('/test-coda', async (req, res) => {
+router.post('/test-coda', auditTestLimit, async (req, res) => {
+    let client = null;
     try {
-        const { codaToken, codaDocId } = req.body;
-        if (!codaToken) return res.status(400).json({ error: 'Coda Token is required' });
+        const config = getConfig();
+        const token = config.codaToken;
+        if (!token) return res.status(400).json({ error: 'Add a Coda token in Settings before testing.' });
 
         const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
         const { StreamableHTTPClientTransport } = require('@modelcontextprotocol/sdk/client/streamableHttp.js');
         
         const transport = new StreamableHTTPClientTransport(
             new URL('https://coda.io/apis/mcp'),
-            { requestInit: { headers: { 'Authorization': 'Bearer ' + codaToken } } }
+            { requestInit: { headers: { 'Authorization': 'Bearer ' + token } } }
         );
 
-        const client = new Client(
+        client = new Client(
             { name: 'test-client', version: '1.0.0' },
             { capabilities: { tools: {} } }
         );
 
         await client.connect(transport);
         
-        // Try to list docs or just verify connection
-        const result = await client.listTools({});
-        await client.close();
+        await client.listTools({});
 
         res.json({ success: true, message: 'Successfully connected to Coda!' });
     } catch (err) {
-        console.error('Coda Test Error:', err.message);
+        logger.error('Coda test error', err);
         res.status(401).json({ error: `Connection failed: ${err.message}` });
+    } finally {
+        if (client) {
+            try {
+                await client.close();
+            } catch (_) {}
+        }
     }
 });
 

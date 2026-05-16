@@ -1,30 +1,27 @@
 <div class="dashboard-container">
     <div class="view-header dashboard-hero">
         <div class="header-text">
-            <div class="view-tag">OVERVIEW</div>
+            <div class="view-tag">DASHBOARD</div>
             <h2>Dashboard</h2>
-            <p>Quick access to the monitored URL count, the latest run, and recent compliance scans.</p>
+            <p>Current scope totals, the latest run, and recent scan history.</p>
         </div>
         <div class="header-actions">
-            <button class="run-btn premium" onclick="openWizard()">
-                <div class="play-icon-circle">
-                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-                <span>New Scan</span>
+            <button class="run-btn" onclick="openWizard()">
+                <span>Start Scan</span>
             </button>
         </div>
     </div>
 
     <section id="active-scan-banner" class="active-scan-banner glass-card hidden" aria-live="polite">
         <div class="active-scan-copy">
-            <div class="scan-pill">Live scan</div>
+            <div class="scan-pill">Running</div>
             <h3 id="active-scan-title">Scan in progress</h3>
-            <p id="active-scan-detail">The crawler is running and collecting live results.</p>
+            <p id="active-scan-detail">The crawler is running and collecting results.</p>
         </div>
         <div class="active-scan-meter">
             <div class="active-scan-meter-header">
                 <span id="active-scan-progress-text">0% complete</span>
-                <button id="active-scan-action" class="secondary-btn" type="button">Watch live progress</button>
+                <button id="active-scan-action" class="secondary-btn" type="button">View progress</button>
             </div>
             <div class="active-scan-track" aria-hidden="true">
                 <div id="active-scan-progress" class="active-scan-fill" style="width: 0%;"></div>
@@ -32,101 +29,108 @@
         </div>
     </section>
 
-    <div class="dashboard-grid">
-        <article class="glass-card stat-card">
-            <div class="card-eyebrow">Stats</div>
-            <div class="stat-value" id="dashboard-urls-count">--</div>
-            <div class="stat-label">URLs in scope</div>
-            <div class="stat-note" id="dashboard-scopes-count">-- monitored scopes</div>
+    <div class="dashboard-summary-grid">
+        <article class="summary-card glass-card">
+            <div class="card-eyebrow">URLs in scope</div>
+            <div class="summary-value" id="dashboard-urls-count">--</div>
+            <div class="summary-note">Total URLs across all scopes</div>
         </article>
+        <article class="summary-card glass-card">
+            <div class="card-eyebrow">Total agents</div>
+            <div class="summary-value" id="dashboard-agents-count">--</div>
+            <div class="summary-note">Configured agents</div>
+        </article>
+        <article class="summary-card glass-card">
+            <div class="card-eyebrow">Scopes tracked</div>
+            <div class="summary-value" id="dashboard-scopes-count">--</div>
+            <div class="summary-note">Tracked scopes</div>
+        </article>
+    </div>
 
+    <div class="dashboard-grid">
         <article class="glass-card latest-run-card">
-            <div class="card-header">
+            <div class="latest-run-header card-header">
                 <div class="header-main">
-                    <h3>Latest Run Data</h3>
-                    <p>Most recent scope-level audit summary with coverage and risk breakdown.</p>
+                    <h3>Latest Scan</h3>
                 </div>
                 <span id="latest-run-health" class="status-badge">--</span>
             </div>
 
             <div class="latest-run-layout">
                 <div class="latest-run-summary card-panel">
-                    <div class="card-eyebrow">Site</div>
-                    <div id="latest-run-site" class="latest-run-site">No runs yet</div>
-                    <div id="latest-run-domain" class="latest-run-domain">--</div>
-                    <div class="latest-run-summary-meta">
-                        <span class="summary-chip">
-                            <span class="summary-chip-label">Run date</span>
-                            <strong id="latest-run-date">--</strong>
-                        </span>
-                        <span class="summary-chip">
-                            <span class="summary-chip-label">Agents</span>
-                            <strong id="latest-run-agent-count">--</strong>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="latest-run-metrics card-panel">
                     <div class="panel-title">
                         <div>
-                            <div class="card-eyebrow">Coverage</div>
-                            <h4>Scope and volume</h4>
+                            <div class="card-eyebrow">Latest run</div>
+                            <h4>Run details</h4>
                         </div>
-                        <span class="panel-note">How much of the site was scanned</span>
+                        <span class="panel-note">Latest scan snapshot</span>
                     </div>
-                    <div class="metric-grid">
-                        <div class="metric-tile">
+                    <div class="latest-run-overview-grid">
+                        <div class="metric-tile metric-tile--summary">
+                            <span class="metric-label">Site</span>
+                            <strong id="latest-run-site" class="latest-run-site">No runs yet</strong>
+                            <span id="latest-run-domain" class="latest-run-domain">--</span>
+                        </div>
+                        <div class="metric-tile metric-tile--summary">
+                            <span class="metric-label">Run date</span>
+                            <strong id="latest-run-date">--</strong>
+                        </div>
+                        <div class="metric-tile metric-tile--summary">
                             <span class="metric-label">Pages scanned</span>
                             <strong id="latest-run-pages">--</strong>
-                            <span class="metric-subcopy">URLs reviewed in this run</span>
                         </div>
-                        <div class="metric-tile">
+                        <div class="metric-tile metric-tile--summary">
                             <span class="metric-label">Images checked</span>
                             <strong id="latest-run-images">--</strong>
-                            <span class="metric-subcopy">Image assets inspected</span>
                         </div>
-                        <div class="metric-tile">
-                            <span class="metric-label">URLs with issues</span>
-                            <strong id="latest-run-url-issues">--</strong>
-                            <span class="metric-subcopy">Pages that need attention</span>
-                        </div>
-                        <div class="metric-tile">
-                            <span class="metric-label">Issue density</span>
-                            <strong id="latest-run-density">--</strong>
-                            <span class="metric-subcopy">Issues per scanned page</span>
+                        <div class="metric-tile metric-tile--summary">
+                            <span class="metric-label">Duration</span>
+                            <strong id="latest-run-duration">--</strong>
+                            <span class="metric-subcopy">Elapsed time</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="latest-run-metrics card-panel">
+                <aside class="agents-panel card-panel">
                     <div class="panel-title">
                         <div>
-                            <div class="card-eyebrow">Risk</div>
-                            <h4>Findings and focus</h4>
-                        </div>
-                        <span class="panel-note">What deserves the next review pass</span>
+                    <div class="card-eyebrow">Agents</div>
+                    <h4>Used in this run</h4>
+                </div>
+                <span class="panel-note"><strong id="latest-run-agent-count">--</strong> selected</span>
+            </div>
+                    <div id="latest-run-agent-chips" class="agent-chip-list" aria-label="Used agents"></div>
+                </aside>
+            </div>
+
+            <div class="latest-run-metrics card-panel">
+                <div class="panel-title">
+                    <div>
+                    <div class="card-eyebrow">Findings</div>
+                    <h4>Findings and focus</h4>
+                </div>
+                    <span class="panel-note">Items to review next</span>
+                </div>
+                <div class="metric-grid metric-grid--four risk-grid">
+                    <div class="metric-tile">
+                        <span class="metric-label">Total issues</span>
+                        <strong id="latest-run-issues">--</strong>
+                        <span class="metric-subcopy">All reported findings</span>
                     </div>
-                    <div class="metric-grid risk-grid">
-                        <div class="metric-tile">
-                            <span class="metric-label">Total issues</span>
-                            <strong id="latest-run-issues">--</strong>
-                            <span class="metric-subcopy">All reported findings</span>
-                        </div>
-                        <div class="metric-tile">
-                            <span class="metric-label">High severity</span>
-                            <strong id="latest-run-high">--</strong>
-                            <span class="metric-subcopy">Blocking or serious issues</span>
-                        </div>
-                        <div class="metric-tile">
-                            <span class="metric-label">Medium severity</span>
-                            <strong id="latest-run-medium">--</strong>
-                            <span class="metric-subcopy">Important follow-up items</span>
-                        </div>
-                        <div class="metric-tile">
-                            <span class="metric-label">Agent focus</span>
-                            <strong id="latest-run-focus">--</strong>
-                            <span class="metric-subcopy">Primary audit modules</span>
-                        </div>
+                    <div class="metric-tile">
+                        <span class="metric-label">High severity</span>
+                        <strong id="latest-run-high">--</strong>
+                        <span class="metric-subcopy">Blocking issues</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-label">Medium severity</span>
+                        <strong id="latest-run-medium">--</strong>
+                        <span class="metric-subcopy">Needs follow-up</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-label">URLs with issues</span>
+                        <strong id="latest-run-url-issues">--</strong>
+                        <span class="metric-subcopy">Pages to review</span>
                     </div>
                 </div>
             </div>
@@ -136,10 +140,10 @@
     <div class="table-card glass-card">
         <div class="card-header">
             <div class="header-main">
-                <h3>Recent Compliance Scans</h3>
-                <p>Most recent runs with direct access to CSV, PDF, and Coda exports.</p>
+                <h3>Recent Scans</h3>
+                <p>Most recent runs with links to CSV and PDF outputs.</p>
             </div>
-            <a href="#" class="view-all" onclick="switchView('reports'); return false;">View Full History</a>
+            <a href="#" class="view-all" onclick="switchView('reports'); return false;">View history</a>
         </div>
         <div class="table-wrapper">
             <table>

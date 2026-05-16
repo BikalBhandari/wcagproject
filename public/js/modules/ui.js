@@ -158,10 +158,10 @@ function renderWizardSteps() {
             <div class="wizard-step-header">
                 <div>
                     <h4>Choose agents</h4>
-                    <p>Default selections use the enabled fleet. Adjust them before launch if you want a smaller run.</p>
+                    <p>Default selections use enabled agents. Adjust them before launch if you want a smaller run.</p>
                 </div>
                 <div class="wizard-toolbar">
-                    <button type="button" class="secondary-btn" onclick="useEnabledWizardAgents()">Use enabled fleet</button>
+                    <button type="button" class="secondary-btn" onclick="useEnabledWizardAgents()">Use enabled agents</button>
                     <button type="button" class="secondary-btn" onclick="selectAllWizardAgents()">Select all</button>
                     <button type="button" class="secondary-btn" onclick="clearWizardAgents()">Clear all</button>
                 </div>
@@ -179,7 +179,7 @@ function renderWizardSteps() {
                             >
                             <div class="option-info">
                                 <span class="option-name">${escapeHtml(formatAgentLabel(agent))}</span>
-                                <span class="option-meta">${agent.enabled ? 'Enabled in fleet' : 'Available agent'}</span>
+                                <span class="option-meta">${agent.enabled ? 'Enabled' : 'Available'}</span>
                             </div>
                         </label>
                     `;
@@ -209,7 +209,7 @@ function renderWizardSteps() {
                 </div>
             </div>
             <div class="wizard-disclaimer">
-                The scan will start immediately and live progress will appear in the dashboard once the server accepts the request.
+                The scan will start immediately and progress will appear in the dashboard once the server accepts the request.
             </div>
         </section>
     `;
@@ -383,7 +383,7 @@ export function openImportModal() {
 export async function deployFleet() {
     const success = await api.toggleAllAgents(true);
     if (success) {
-        alert('Fleet deployed successfully!');
+        alert('Agents enabled.');
         window.location.reload();
     }
 }
@@ -391,7 +391,7 @@ export async function deployFleet() {
 export async function stopAllAgents() {
     const success = await api.stopAllAgents();
     if (success) {
-        alert('Fleet shutdown.');
+        alert('Agents disabled.');
         window.location.reload();
     }
 }

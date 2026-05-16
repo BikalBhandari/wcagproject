@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const { createLogger } = require('../../utils/logger');
 
 const REPORT_OUTPUT_DIR = path.join(__dirname, '..', '..', 'output', 'reports');
+const logger = createLogger('reports');
 
 router.get('/', (req, res) => {
     res.set('Cache-Control', 'no-store');
@@ -46,7 +48,7 @@ router.get('/', (req, res) => {
                     const calculatedCompliance = 100 - (weightedScore / pages * 2);
                     compliance = Math.max(0, Math.min(100, calculatedCompliance));
                 } catch (e) {
-                    console.error('Error parsing meta:', metaPath);
+                    logger.error('Error parsing report metadata', { metaPath, error: e.message });
                 }
             }
 

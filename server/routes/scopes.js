@@ -2,11 +2,20 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const {
+    normalizeScopeFile,
+    validateScopeName,
+    validateUrlList,
+    validateSitemapUrl
+} = require('../../utils/requestValidation');
+const { createRateLimit } = require('../../utils/rateLimit');
+const { createLogger } = require('../../utils/logger');
 
 const Sitemapper = require('sitemapper').default || require('sitemapper');
 
 const SCOPE_DATA_DIR = path.join(__dirname, '..', '..', 'data', 'scopes');
-console.log('Resolved SCOPE_DATA_DIR:', SCOPE_DATA_DIR);
+const logger = createLogger('scopes');
+const scopeWriteLimit = createRateLimit({ limit: 10, windowMs: 5 * 60 * 1000, keyPrefix: 'scopes-write' });
 
 function scopeFileName(name) {
     const slug = String(name || '')
@@ -50,7 +59,7 @@ router.get('/', (req, res) => {
                     }
                 }
             } catch (e) {
-                console.error(`Error reading scope file ${f}:`, e);
+                logger.error(`Error reading scope file ${f}`, e);
             }
 
             // Match reports using the same logic the user sees in the Reports table
@@ -68,7 +77,7 @@ router.get('/', (req, res) => {
                     lastScan = scopeReports[0].time; // Returns the Date object which Express serializes to ISO string
                 }
             } catch (err) {
-                console.error(`Error finding reports for ${scopeBase}:`, err);
+                logger.error(`Error finding reports for ${scopeBase}`, err);
             }
 
             return {
@@ -84,15 +93,19 @@ router.get('/', (req, res) => {
 });
 
 // Create new scope
-router.post('/', (req, res) => {
-    const { name, urls } = req.body;
-    if (!name || !urls || !Array.isArray(urls)) {
-        return res.status(400).json({ error: 'Name and URLs array are required' });
+router.post('/', scopeWriteLimit, (req, res) => {
+    const nameResult = validateScopeName(req.body?.name);
+    const urlsResult = validateUrlList(req.body?.urls);
+
+    if (!nameResult.valid) {
+        return res.status(400).json({ error: nameResult.error });
     }
 
-    console.log('Creating new scope:', { name, urls });
-    
-    const fileName = scopeFileName(name);
+    if (!urlsResult.valid) {
+        return res.status(400).json({ error: urlsResult.error });
+    }
+
+    const fileName = scopeFileName(nameResult.value);
     const filePath = path.join(SCOPE_DATA_DIR, fileName);
 
     if (fs.existsSync(filePath)) {
@@ -100,29 +113,35 @@ router.post('/', (req, res) => {
     }
 
     try {
-        fs.writeFileSync(filePath, JSON.stringify(urls, null, 2));
+        fs.writeFileSync(filePath, JSON.stringify(urlsResult.value, null, 2));
         res.json({ success: true, file: fileName });
     } catch (e) {
-        console.error('Error saving scope file:', e);
+        logger.error('Error saving scope file', e);
         res.status(500).json({ error: 'Failed to save scope' });
     }
 });
 
 // Import sitemap
-router.post('/import-sitemap', async (req, res) => {
-    const { name, sitemapUrl } = req.body;
-    if (!name || !sitemapUrl) {
-        return res.status(400).json({ error: 'Name and Sitemap URL are required' });
+router.post('/import-sitemap', scopeWriteLimit, async (req, res) => {
+    const nameResult = validateScopeName(req.body?.name);
+    const sitemapUrlResult = validateSitemapUrl(req.body?.sitemapUrl);
+
+    if (!nameResult.valid) {
+        return res.status(400).json({ error: nameResult.error });
+    }
+
+    if (!sitemapUrlResult.valid) {
+        return res.status(400).json({ error: sitemapUrlResult.error });
     }
 
     const sitemap = new Sitemapper();
     try {
-        const { sites } = await sitemap.fetch(sitemapUrl);
+        const { sites } = await sitemap.fetch(sitemapUrlResult.value);
         if (!sites || sites.length === 0) {
             return res.status(400).json({ error: 'No URLs found in sitemap' });
         }
 
-        const fileName = scopeFileName(name);
+        const fileName = scopeFileName(nameResult.value);
         const filePath = path.join(SCOPE_DATA_DIR, fileName);
 
         if (fs.existsSync(filePath)) {
@@ -132,15 +151,15 @@ router.post('/import-sitemap', async (req, res) => {
         fs.writeFileSync(filePath, JSON.stringify(sites, null, 2));
         res.json({ success: true, file: fileName, urlCount: sites.length });
     } catch (e) {
-        console.error('Sitemap import error:', e);
+        logger.error('Sitemap import error', e);
         res.status(500).json({ error: 'Failed to fetch or parse sitemap' });
     }
 });
 
-router.delete('/:file', (req, res) => {
-    const file = path.basename(req.params.file || '');
+router.delete('/:file', scopeWriteLimit, (req, res) => {
+    const file = normalizeScopeFile(req.params.file);
 
-    if (!file || !file.endsWith('.json')) {
+    if (!file) {
         return res.status(400).json({ error: 'Invalid scope file' });
     }
 
@@ -154,21 +173,26 @@ router.delete('/:file', (req, res) => {
         fs.unlinkSync(filePath);
         res.json({ success: true, file });
     } catch (e) {
-        console.error('Error deleting scope file:', e);
+        logger.error('Error deleting scope file', e);
         res.status(500).json({ error: 'Failed to delete scope' });
     }
 });
 
-router.put('/:file', (req, res) => {
-    const oldFile = path.basename(req.params.file || '');
-    const { name, urls } = req.body;
+router.put('/:file', scopeWriteLimit, (req, res) => {
+    const oldFile = normalizeScopeFile(req.params.file);
+    const nameResult = validateScopeName(req.body?.name);
+    const urlsResult = validateUrlList(req.body?.urls);
 
-    if (!oldFile || !oldFile.endsWith('.json')) {
+    if (!oldFile) {
         return res.status(400).json({ error: 'Invalid scope file' });
     }
 
-    if (!name || !urls || !Array.isArray(urls)) {
-        return res.status(400).json({ error: 'Name and URLs array are required' });
+    if (!nameResult.valid) {
+        return res.status(400).json({ error: nameResult.error });
+    }
+
+    if (!urlsResult.valid) {
+        return res.status(400).json({ error: urlsResult.error });
     }
 
     const oldPath = path.join(SCOPE_DATA_DIR, oldFile);
@@ -176,9 +200,9 @@ router.put('/:file', (req, res) => {
         return res.status(404).json({ error: 'Scope not found' });
     }
 
-    const newFile = scopeFileName(name);
+    const newFile = scopeFileName(nameResult.value);
     const newPath = path.join(SCOPE_DATA_DIR, newFile);
-    const payload = JSON.stringify(urls, null, 2);
+    const payload = JSON.stringify(urlsResult.value, null, 2);
 
     if (newFile !== oldFile && fs.existsSync(newPath)) {
         return res.status(409).json({ error: 'Scope with this name already exists' });
@@ -204,7 +228,7 @@ router.put('/:file', (req, res) => {
 
         res.json({ success: true, file: newFile });
     } catch (e) {
-        console.error('Error updating scope file:', e);
+        logger.error('Error updating scope file', e);
         res.status(500).json({ error: 'Failed to update scope' });
     }
 });

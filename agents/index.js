@@ -15,7 +15,7 @@ const formAccessibilityAgent = require('./formAccessibilityAgent');
 const formErrorAgent = require('./formErrorAgent');
 const ariaAgent = require('./ariaAgent');
 
-// --- Structure Agents ---
+// --- Outline Agents ---
 const headingStructureAgent = require('./headingStructureAgent');
 const landmarkAgent = require('./landmarkAgent');
 
@@ -50,7 +50,7 @@ const registry = {
     ariaAgent,
     aria: ariaAgent,
 
-    // Structure
+    // Outline
     headingStructureAgent,
     headingStructure: headingStructureAgent,
     landmarkAgent,
@@ -90,7 +90,7 @@ const categories = {
     detection: ['altTextAgent'],
     analysis: ['altQualityAgent', 'contrastAgent'],
     validation: ['formAccessibilityAgent', 'formErrorAgent', 'ariaAgent'],
-    structure: ['headingStructureAgent', 'landmarkAgent'],
+    outline: ['headingStructureAgent', 'landmarkAgent'],
     interaction: ['keyboardAgent', 'focusAgent', 'targetSizeAgent'],
     navigation: ['linkAgent', 'linkTextAgent', 'navigationAgent'],
     legacy: ['wcagAgent']

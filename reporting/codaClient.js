@@ -27,13 +27,16 @@ const COLUMN_NAMES = [
 
 const { getConfig } = require('../utils/config');
 const { formatWcag, sanitizeElement, formatTimestamp } = require('../utils/formatUtils');
+const { createLogger } = require('../utils/logger');
+
+const logger = createLogger('coda');
 
 async function createCodaClient() {
     const config = getConfig();
     const token = config.codaToken;
     if (!token) throw new Error('CODA_API_TOKEN is not set (check Settings or .env).');
 
-    console.log(`🔌 Initializing Coda MCP with token: ${token.substring(0, 4)}...${token.substring(token.length - 4)}`);
+    logger.info('Initializing Coda MCP client');
 
     const transport = new StreamableHTTPClientTransport(
         new URL(CODA_MCP_URL),
@@ -50,7 +53,7 @@ async function createCodaClient() {
 }
 
 async function callTool(client, toolName, args) {
-    console.log(`🛠️  Calling tool: ${toolName}...`);
+    logger.debug('Calling Coda tool', { toolName });
     const result = await client.callTool({ name: toolName, arguments: args });
     
     if (result?.isError) {
@@ -105,10 +108,10 @@ async function sendResultsToCoda(results, options = {}) {
     const client = await createCodaClient();
 
     try {
-        console.log(`📂 Using Doc: ${docUri}`);
+        logger.info('Using Coda doc', { docUri });
 
         // 1. Create Page
-        console.log(`➕ Creating page: "${pageTitle}"`);
+        logger.info('Creating Coda page', { pageTitle });
         const pageResult = await callTool(client, 'page_create', {
             uri: docUri,
             title: pageTitle
@@ -129,14 +132,14 @@ async function sendResultsToCoda(results, options = {}) {
         if (!pageUri || !pageUri.includes('pages/')) {
             throw new Error(`Could not resolve valid page URI. Response: ${JSON.stringify(pageResult)}`);
         }
-        console.log(`📍 Resolved Page URI: ${pageUri}`);
+        logger.info('Resolved page URI', { pageUri });
 
         // 2. Prepare initial rows
         const rows = results.map(mapIssueToRow);
         const firstBatch = rows.slice(0, BATCH_SIZE);
         const remainingRows = rows.slice(BATCH_SIZE);
 
-        console.log(`📊 Creating Coda report table...`);
+        logger.info('Creating Coda report table');
         const tableResult = await callTool(client, 'table_create', {
             uri: pageUri,
             name: 'Audit Results',
@@ -160,15 +163,15 @@ async function sendResultsToCoda(results, options = {}) {
         if (!tableUri || !tableUri.includes('tables/')) {
             throw new Error(`Could not resolve valid table URI. Response: ${JSON.stringify(tableResult)}`);
         }
-        console.log(`📍 Resolved Table URI: ${tableUri}`);
+        logger.info('Resolved table URI', { tableUri });
 
         // 3. Insert remaining rows if any
         if (remainingRows.length > 0) {
-            console.log(`📥 Inserting ${remainingRows.length} remaining rows in ${Math.ceil(remainingRows.length / BATCH_SIZE)} batches...`);
+            logger.info('Appending remaining Coda rows', { remainingRows: remainingRows.length });
             for (let i = 0; i < remainingRows.length; i += BATCH_SIZE) {
                 const batch = remainingRows.slice(i, i + BATCH_SIZE);
                 const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-                console.log(`   ⏳ Syncing Batch ${batchNum} (${batch.length} rows)...`);
+                logger.debug('Syncing Coda batch', { batchNum, rows: batch.length });
                 
                 try {
                     await callTool(client, 'table_rows_manage', {
@@ -179,15 +182,15 @@ async function sendResultsToCoda(results, options = {}) {
                             rows: batch
                         }
                     });
-                    console.log(`   ✅ Batch ${batchNum} successfully added.`);
+                    logger.debug('Coda batch added', { batchNum });
                 } catch (batchErr) {
-                    console.error(`   ❌ Failed to add Batch ${batchNum}: ${batchErr.message}`);
+                    logger.warn('Failed to add Coda batch', { batchNum, error: batchErr.message });
                     // Continue with other batches instead of failing the whole scan
                 }
             }
         }
 
-        console.log(`✅ Coda Report Complete: ${pageTitle}`);
+        logger.info('Coda report complete', { pageTitle });
         
         // Return the final shareable URL
         const pageId = pageUri.split('/').pop(); // Extract page ID from coda://docs/docId/pages/pageId
@@ -200,7 +203,7 @@ async function sendResultsToCoda(results, options = {}) {
         };
 
     } catch (err) {
-        console.error('❌ Coda Integration Error:', err.message);
+        logger.error('Coda integration error', err);
         throw err;
     } finally {
         try { await client.close(); } catch (_) {}

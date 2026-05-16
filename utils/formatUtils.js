@@ -49,6 +49,20 @@ function sanitizeElement(element) {
 }
 
 /**
+ * Escapes a string for safe HTML insertion.
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
  * Formats a timestamp into a human-readable string.
  * @param {Date|string} date 
  * @returns {string}
@@ -62,5 +76,6 @@ function formatTimestamp(date) {
 module.exports = {
     formatWcag,
     sanitizeElement,
-    formatTimestamp
+    formatTimestamp,
+    escapeHtml
 };

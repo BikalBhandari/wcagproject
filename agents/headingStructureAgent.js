@@ -1,7 +1,7 @@
 const { attachWcag } = require('../utils/issueUtils');
 
 /**
- * Heading Structure Agent
+ * Heading Outline Agent
  * Checks for missing h1, multiple h1, and skipped heading levels.
  */
 
@@ -28,7 +28,7 @@ async function run(context) {
     const h1s = $('h1');
     if (h1s.length === 0) {
         issues.push(attachWcag({
-            type: 'Structure',
+            type: 'Outline',
             subType: 'Missing H1',
             page: url,
             element: '<body>',
@@ -40,7 +40,7 @@ async function run(context) {
         }, 'HEADING_STRUCTURE'));
     } else if (h1s.length > 1) {
         issues.push(attachWcag({
-            type: 'Structure',
+            type: 'Outline',
             subType: 'Multiple H1s',
             page: url,
             element: 'multiple <h1> tags',
@@ -62,7 +62,7 @@ async function run(context) {
 
         if (prevLevel > 0 && currentLevel > prevLevel + 1) {
             issues.push(attachWcag({
-                type: 'Structure',
+                type: 'Outline',
                 subType: 'Skipped Heading Level',
                 page: url,
                 element: $.html(el),
@@ -82,7 +82,7 @@ async function run(context) {
 
 module.exports = {
     name: 'headingStructure',
-    title: 'Heading Structure',
+    title: 'Heading Outline',
     description: 'Checks for missing or multiple H1 headings and skipped heading levels in the visible document outline.',
     run
 };
