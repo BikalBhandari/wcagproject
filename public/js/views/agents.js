@@ -87,7 +87,7 @@ export async function init() {
         if (success) {
             await loadAgents();
         } else {
-            alert('Failed to toggle agent.');
+            alert('Failed to update agent.');
         }
     };
 
@@ -190,7 +190,7 @@ export async function init() {
                 await loadAgents(); // Refresh data
             }, 1200);
         } else {
-            alert('Failed to save configuration to server.');
+            alert('Failed to save agent settings.');
         }
     };
 
@@ -199,17 +199,17 @@ export async function init() {
         if (success) {
             await loadAgents();
         } else {
-            alert('Failed to deploy fleet.');
+            alert('Failed to enable agents.');
         }
     };
 
     window.stopAllAgents = async () => {
-        if (!confirm('Are you sure you want to shutdown the entire fleet?')) return;
+        if (!confirm('Are you sure you want to disable all agents?')) return;
         const success = await api.toggleAllAgents(false);
         if (success) {
             await loadAgents();
         } else {
-            alert('Failed to shutdown fleet.');
+            alert('Failed to disable agents.');
         }
     };
 
@@ -267,9 +267,9 @@ function renderAgents() {
 
     if (filteredAgents.length === 0) {
         agentsList.innerHTML = `
-            <div class="no-results glass-card">
+                <div class="no-results glass-card">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <h3>No agents matching criteria</h3>
+                <h3>No agents match this filter</h3>
                 <p>Try adjusting your search or category filter.</p>
             </div>
         `;
@@ -280,7 +280,7 @@ function renderAgents() {
         { id: 'detection', name: 'Detection', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
         { id: 'analysis', name: 'Analysis', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>' },
         { id: 'validation', name: 'Validation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' },
-        { id: 'structure', name: 'Structure', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>' },
+        { id: 'outline', name: 'Outline', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>' },
         { id: 'interaction', name: 'Interaction', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4l7 16 2.2-6.4L20 11 4 4z"></path><path d="M14 14l4 4"></path></svg>' },
         { id: 'navigation', name: 'Navigation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' },
         { id: 'legacy', name: 'Legacy', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8"/></svg>' }

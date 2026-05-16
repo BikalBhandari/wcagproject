@@ -82,9 +82,9 @@ function resolveSiteName(report) {
 }
 
 function getComplianceLabel(compliance) {
-    if (compliance >= 90) return { label: 'Healthy', className: 'excellent' };
-    if (compliance >= 70) return { label: 'Needs Review', className: 'warning' };
-    return { label: 'Action Needed', className: 'critical' };
+    if (compliance >= 90) return { label: 'OK', className: 'excellent' };
+    if (compliance >= 70) return { label: 'Review', className: 'warning' };
+    return { label: 'Attention', className: 'critical' };
 }
 
 function getAgentTitle(agentId) {
@@ -92,14 +92,53 @@ function getAgentTitle(agentId) {
     return agent ? agent.title : formatLabel(agentId.replace('Agent', ''));
 }
 
+function renderAgentChips(agentIds = []) {
+    if (!agentIds || agentIds.length === 0) {
+        return '<span class="agent-chip agent-chip--empty">No agents selected</span>';
+    }
+
+    return agentIds.map(agentId => {
+        const agent = (state.agents || []).find(a => a.name === agentId);
+        const title = agent ? agent.title : getAgentTitle(agentId);
+        return `<span class="agent-chip">${escapeHtml(title)}</span>`;
+    }).join('');
+}
+
 function formatCompactNumber(value = 0) {
     return Number(value || 0).toLocaleString();
 }
 
-function formatDensity(issues = 0, pages = 0) {
-    if (!pages) return '--';
-    const density = issues / pages;
-    return density >= 10 ? density.toFixed(1) : density.toFixed(2);
+function formatDuration(ms = 0) {
+    const totalSeconds = Math.max(0, Math.round(Number(ms || 0) / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+    }
+
+    return `${seconds}s`;
+}
+
+function resolveDurationMs(meta = {}) {
+    if (Number.isFinite(Number(meta.durationMs))) {
+        return Number(meta.durationMs);
+    }
+
+    if (meta.startedAt && meta.completedAt) {
+        const started = new Date(meta.startedAt).getTime();
+        const completed = new Date(meta.completedAt).getTime();
+        if (Number.isFinite(started) && Number.isFinite(completed) && completed >= started) {
+            return completed - started;
+        }
+    }
+
+    return 0;
 }
 
 function formatDomain(value = '') {
@@ -196,15 +235,14 @@ function renderLatestRun(latest) {
     const domainEl = document.getElementById('latest-run-domain');
     const pagesEl = document.getElementById('latest-run-pages');
     const imagesEl = document.getElementById('latest-run-images');
+    const durationEl = document.getElementById('latest-run-duration');
     const issuesEl = document.getElementById('latest-run-issues');
     const urlIssuesEl = document.getElementById('latest-run-url-issues');
-    const densityEl = document.getElementById('latest-run-density');
     const highEl = document.getElementById('latest-run-high');
     const mediumEl = document.getElementById('latest-run-medium');
     const dateEl = document.getElementById('latest-run-date');
     const agentCountEl = document.getElementById('latest-run-agent-count');
-    const agentsEl = document.getElementById('latest-run-agents');
-    const focusEl = document.getElementById('latest-run-focus');
+    const agentChipsEl = document.getElementById('latest-run-agent-chips');
 
     if (!latest) {
         if (healthEl) {
@@ -215,15 +253,14 @@ function renderLatestRun(latest) {
         if (domainEl) domainEl.textContent = '--';
         if (pagesEl) pagesEl.textContent = '--';
         if (imagesEl) imagesEl.textContent = '--';
+        if (durationEl) durationEl.textContent = '--';
         if (issuesEl) issuesEl.textContent = '--';
         if (urlIssuesEl) urlIssuesEl.textContent = '--';
-        if (densityEl) densityEl.textContent = '--';
         if (highEl) highEl.textContent = '--';
         if (mediumEl) mediumEl.textContent = '--';
         if (dateEl) dateEl.textContent = '--';
         if (agentCountEl) agentCountEl.textContent = '--';
-        if (agentsEl) agentsEl.textContent = '--';
-        if (focusEl) focusEl.textContent = '--';
+        if (agentChipsEl) agentChipsEl.innerHTML = '<span class="agent-chip agent-chip--empty">No agents selected</span>';
         return;
     }
 
@@ -234,13 +271,13 @@ function renderLatestRun(latest) {
         year: 'numeric'
     });
     const agents = latest.meta?.agents || [];
-    const focus = agents.length > 0 ? agents.slice(0, 2).map(getAgentTitle).join(', ') : 'Scan summary';
     const severity = latest.meta?.severity || {};
     const pages = latest.meta?.totalPages || 0;
     const totalImages = latest.meta?.totalImages || 0;
     const totalIssues = latest.meta?.totalIssues || latest.missingAlt || 0;
     const scanErrors = latest.meta?.scanErrors || 0;
     const urlsWithIssues = latest.meta?.urlsWithIssues || 0;
+    const durationMs = resolveDurationMs(latest.meta || {});
     const domain = formatDomain(latest.meta?.domain || latest.meta?.targetUrl || '--');
 
     if (healthEl) {
@@ -251,6 +288,7 @@ function renderLatestRun(latest) {
     if (domainEl) domainEl.textContent = domain;
     if (pagesEl) pagesEl.textContent = formatCompactNumber(pages);
     if (imagesEl) imagesEl.textContent = formatCompactNumber(totalImages);
+    if (durationEl) durationEl.textContent = formatDuration(durationMs);
     if (issuesEl) {
         issuesEl.textContent = formatCompactNumber(totalIssues);
         if (scanErrors > 0) {
@@ -260,21 +298,24 @@ function renderLatestRun(latest) {
         }
     }
     if (urlIssuesEl) urlIssuesEl.textContent = formatCompactNumber(urlsWithIssues);
-    if (densityEl) densityEl.textContent = formatDensity(totalIssues, pages);
     if (highEl) highEl.textContent = formatCompactNumber(severity.high || 0);
     if (mediumEl) mediumEl.textContent = formatCompactNumber(severity.medium || 0);
     if (dateEl) dateEl.textContent = date;
     if (agentCountEl) agentCountEl.textContent = `${agents.length}`;
-    if (agentsEl) agentsEl.textContent = agents.length > 0 ? agents.map(getAgentTitle).join(', ') : '--';
-    if (focusEl) focusEl.textContent = focus;
+    if (agentChipsEl) agentChipsEl.innerHTML = renderAgentChips(agents);
 }
 
 function renderStatsCard() {
     const totalUrls = state.scopes.reduce((sum, scope) => sum + (scope.urlCount || 0), 0);
     const totalScopes = state.scopes.length;
+    const totalAgents = state.agents.length;
     animateValue('dashboard-urls-count', 0, totalUrls, 700);
 
+    const agentsEl = document.getElementById('dashboard-agents-count');
     const scopesEl = document.getElementById('dashboard-scopes-count');
+    if (agentsEl) {
+        agentsEl.textContent = `${totalAgents}`;
+    }
     if (scopesEl) {
         scopesEl.textContent = `${totalScopes} monitored scope${totalScopes === 1 ? '' : 's'}`;
     }
@@ -301,11 +342,11 @@ function renderScanState() {
 
     banner.classList.remove('hidden');
     if (title) title.textContent = `Scan in progress for ${fileLabel}`;
-    if (detail) detail.textContent = state.scanProgressText || 'The crawler is running and collecting live results.';
+    if (detail) detail.textContent = state.scanProgressText || 'The crawler is running and collecting results.';
     if (progress) progress.style.width = `${state.scanProgress || 0}%`;
     if (progressText) progressText.textContent = `${(state.scanProgress || 0).toFixed(0)}% complete`;
     if (button) {
-        button.textContent = 'Watch live progress';
+        button.textContent = 'View progress';
         button.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }

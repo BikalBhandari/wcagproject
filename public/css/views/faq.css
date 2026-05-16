@@ -65,7 +65,7 @@
 /* Tech Grid */
 .faq-tech-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
 }
 
@@ -101,6 +101,57 @@
     font-size: 0.8rem;
     color: var(--text-dim);
     line-height: 1.4;
+}
+
+.faq-agent-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.agent-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-height: 100%;
+}
+
+.agent-badge {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(140, 29, 64, 0.08);
+    color: var(--primary);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.agent-item h5 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.agent-item p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.agent-loading {
+    grid-column: 1 / -1;
+    padding: 1rem 1.25rem;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.75);
+    font-size: 0.85rem;
 }
 
 /* Accordion */
@@ -168,4 +219,11 @@
     font-size: 0.9rem;
     line-height: 1.6;
     color: var(--text-dim);
+}
+
+@media (max-width: 720px) {
+    .faq-tech-grid,
+    .faq-agent-grid {
+        grid-template-columns: 1fr;
+    }
 }

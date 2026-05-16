@@ -14,7 +14,6 @@ async function run(context) {
     const agentsDir = path.join(__dirname, '..', 'agents');
     const rootDir = path.join(__dirname, '..');
     const indexHtmlPath = path.join(rootDir, 'public', 'index.html');
-    const scriptJsPath = path.join(rootDir, 'public', 'script.js');
 
     // 1. Discover all agents and extract metadata
     const agentFiles = fs.readdirSync(agentsDir).filter(f => 
@@ -75,41 +74,6 @@ async function run(context) {
                 updatesMade++;
             } else {
                 console.log('📄 FAQs in index.html are already up to date.');
-            }
-        }
-    }
-
-    // 3. Update script.js auditInfo
-    if (fs.existsSync(scriptJsPath)) {
-        let script = fs.readFileSync(scriptJsPath, 'utf8');
-        const auditInfoStart = '// AUDIT_INFO_START';
-        const auditInfoEnd = '// AUDIT_INFO_END';
-
-        if (script.includes(auditInfoStart) && script.includes(auditInfoEnd)) {
-            const auditInfo = {};
-            agentsMetadata.forEach(a => {
-                const key = a.fileName.replace('.js', '');
-                auditInfo[key] = {
-                    title: a.title,
-                    subtitle: a.subtitle || 'Audit Agent',
-                    skills: a.skills || ['Accessibility'],
-                    description: a.description
-                };
-            });
-            
-            const auditInfoContent = `const auditInfo = ${JSON.stringify(auditInfo, null, 8)};`;
-            
-            const startIdx = script.indexOf(auditInfoStart) + auditInfoStart.length;
-            const endIdx = script.indexOf(auditInfoEnd);
-            
-            const newScript = script.substring(0, startIdx) + '\n    ' + auditInfoContent + '\n    ' + script.substring(endIdx);
-            
-            if (script !== newScript) {
-                fs.writeFileSync(scriptJsPath, newScript);
-                console.log('📜 Updated auditInfo in script.js');
-                updatesMade++;
-            } else {
-                console.log('📜 auditInfo in script.js is already up to date.');
             }
         }
     }

@@ -16,6 +16,8 @@ const httpClient = {
             const response = await axios.get(url, {
                 headers: { ...DEFAULT_HEADERS, ...options.headers },
                 timeout: options.timeout || 15000,
+                maxRedirects: 5,
+                validateStatus: status => status >= 200 && status < 400,
                 httpAgent,
                 httpsAgent,
                 ...options

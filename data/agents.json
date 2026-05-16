@@ -1,4 +1,4 @@
-module.exports = {
+{
     "agents": [
         {
             "name": "altTextAgent",
@@ -99,4 +99,4 @@ module.exports = {
             "config": {}
         }
     ]
-};
+}

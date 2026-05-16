@@ -1,2 +1,7 @@
 .env
 node_modules/
+data/runtime/
+output/logs/
+output/reports/*.csv
+output/reports/*.json
+output/reports/*.pdf

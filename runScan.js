@@ -5,9 +5,11 @@ const pLimit = pLimitLib.default || pLimitLib;
 const { getPageContext } = require('./core/auditor');
 const { scopes: SCOPES } = require('./config/scopes.config');
 const { processIssues } = require('./utils/postProcessor');
+const { readAgentConfig } = require('./utils/agentConfig');
+const { createLogger } = require('./utils/logger');
 
 const SCOPE_DATA_DIR = path.join(__dirname, 'data', 'scopes');
-const AGENTS_CONFIG_PATH = path.join(__dirname, 'config', 'agents.config.js');
+const logger = createLogger('scan');
 const confidenceRank = {
     low: 1,
     medium: 2,
@@ -16,10 +18,9 @@ const confidenceRank = {
 
 function loadAgentFleetConfig() {
     try {
-        delete require.cache[require.resolve(AGENTS_CONFIG_PATH)];
-        return require(AGENTS_CONFIG_PATH);
+        return readAgentConfig();
     } catch (err) {
-        console.warn(`⚠️  Could not read agent fleet config: ${err.message}`);
+        logger.warn('Could not read agent fleet config', err);
         return { agents: [] };
     }
 }
@@ -59,7 +60,7 @@ function applyAgentOutputLimits(issues, config = {}) {
  * @param {number} concurrency - Number of pages to scan concurrently.
  * @returns {Promise<Array>} - All issues found.
  */
-async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 10, progressCallback = null) {
+async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 10, progressCallback = null, options = {}) {
     const agentRegistry = require('./agents');
     let urls = [];
     const stats = {
@@ -72,8 +73,15 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
     };
 
     // 1. Resolve Scope
-    if (SCOPES[scopeInput.toLowerCase()]) {
-        scopeInput = SCOPES[scopeInput.toLowerCase()];
+    const resolvedScopeInput = String(scopeInput || '').trim();
+    if (!resolvedScopeInput) {
+        throw new Error('Scope input is required.');
+    }
+
+    if (SCOPES[resolvedScopeInput.toLowerCase()]) {
+        scopeInput = SCOPES[resolvedScopeInput.toLowerCase()];
+    } else {
+        scopeInput = resolvedScopeInput;
     }
 
     if (scopeInput.endsWith('.json')) {
@@ -91,15 +99,19 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
         }
 
         if (fs.existsSync(jsonPath)) {
-            urls = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+            const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+            if (!Array.isArray(parsed)) {
+                throw new Error(`Scope file must contain an array of URLs: ${jsonPath}`);
+            }
+            urls = parsed;
         } else {
             throw new Error(`Scope file not found: ${jsonPath}`);
         }
     } else if (scopeInput.startsWith('http')) {
-        const Sitemapper = require('sitemapper').default;
+        const Sitemapper = require('sitemapper').default || require('sitemapper');
         const sitemap = new Sitemapper({ url: scopeInput, timeout: 15000 });
         const result = await sitemap.fetch();
-        urls = result.sites;
+        urls = Array.isArray(result.sites) ? result.sites : [];
     } else {
         throw new Error('Invalid scope input. Must be a registered scope name or a JSON file path.');
     }
@@ -124,10 +136,12 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
     const concurrencyInt = Math.max(1, parseInt(concurrency) || 10);
     const limit = pLimit(concurrencyInt);
 
-    console.log(`🔍 Starting Scan...`);
-    console.log(`🌐 Scope: ${scopeInput} (${urls.length} URLs)`);
-    console.log(`🤖 Active Agents: ${agents.map(a => a.name).join(', ')}`);
-    console.log(`🚀 Concurrency: ${concurrencyInt}`);
+    logger.info('Starting scan', {
+        scope: scopeInput,
+        urlCount: urls.length,
+        agents: agents.map(a => a.name),
+        concurrency: concurrencyInt
+    });
 
     const allIssues = [];
     const isScanError = issue => issue.type === 'system' && issue.subType === 'Network Error';
@@ -137,8 +151,8 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
 
     const tasks = urls.map(url => limit(async () => {
         try {
-            console.log(`📄 Scanning: ${url}`);
-            const context = await getPageContext(url);
+            logger.debug('Scanning URL', { url });
+            const context = await getPageContext(url, { timeout: options.timeout });
             
             if (context.error) {
                 allIssues.push({
@@ -186,12 +200,12 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
                             });
                         }
                     } catch (err) {
-                        console.error(`❌ Agent ${agent.name} failed on ${url}:`, err.message);
+                        logger.error(`Agent ${agent.name} failed on URL`, { url, error: err.message });
                     }
                 }
             }
         } catch (err) {
-            console.error(`❌ Unexpected error on ${url}:`, err.message);
+            logger.error('Unexpected scan error', { url, error: err.message });
         } finally {
             processedCount++;
             if (progressCallback) {
@@ -210,7 +224,7 @@ async function runScan(scopeInput, agentNames = ['altTextAgent'], concurrency = 
 
     await Promise.all(tasks);
 
-    return { 
+    return {
         issues: allIssues, 
         stats: {
             ...stats,

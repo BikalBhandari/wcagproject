@@ -3,7 +3,7 @@ const { attachWcag } = require('../utils/issueUtils');
 /**
  * Landmark Agent
  * 
- * Audits semantic structure and landmarks:
+ * Audits semantic outline and landmarks:
  * 1. Missing <main>
  * 2. Missing <nav>
  * 3. Multiple <main>
@@ -23,11 +23,11 @@ async function run(context) {
         const mainRoles = $('[role="main"]');
         if (mainRoles.length === 0) {
             issues.push(attachWcag({
-                type: 'Structure',
+                type: 'Outline',
                 subType: 'Missing Main Landmark',
                 page: url,
                 element: 'document',
-                message: 'No <main> element or role="main" found. Landmarks help users navigate the page structure.',
+                message: 'No <main> element or role="main" found. Landmarks help users navigate the page outline.',
                 severity: 'high',
                 recommendation: 'Wrap the primary content of the page in a <main> element.',
                 confidence: 'high',
@@ -35,7 +35,7 @@ async function run(context) {
             }, 'LANDMARK_MISSING'));
         } else if (mainRoles.length > 1) {
             issues.push(attachWcag({
-                type: 'Structure',
+                type: 'Outline',
                 subType: 'Multiple Main Landmarks',
                 page: url,
                 element: 'multiple elements',
@@ -48,7 +48,7 @@ async function run(context) {
         }
     } else if (mainElements.length > 1) {
         issues.push(attachWcag({
-            type: 'Structure',
+            type: 'Outline',
             subType: 'Multiple Main Landmarks',
             page: url,
             element: 'multiple <main> tags',
@@ -67,7 +67,7 @@ async function run(context) {
         const navRoles = $('[role="navigation"]');
         if (navRoles.length === 0) {
             issues.push(attachWcag({
-                type: 'Structure',
+                type: 'Outline',
                 subType: 'Missing Navigation Landmark',
                 page: url,
                 element: 'document',
@@ -84,7 +84,7 @@ async function run(context) {
     const header = $('header');
     if (header.length === 0 && $('[role="banner"]').length === 0) {
         issues.push(attachWcag({
-            type: 'Structure',
+            type: 'Outline',
             subType: 'Missing Header Landmark',
             page: url,
             element: 'document',
@@ -99,7 +99,7 @@ async function run(context) {
     const footer = $('footer');
     if (footer.length === 0 && $('[role="contentinfo"]').length === 0) {
         issues.push(attachWcag({
-            type: 'Structure',
+            type: 'Outline',
             subType: 'Missing Footer Landmark',
             page: url,
             element: 'document',
@@ -116,7 +116,7 @@ async function run(context) {
 
 module.exports = {
     name: 'landmark',
-    title: 'Landmark & Structure',
+    title: 'Landmark & Outline',
     description: 'Checks for core landmarks like <main>, <nav>, <header>, and <footer>, including missing or duplicate landmark usage that affects screen reader navigation.',
     run
 };

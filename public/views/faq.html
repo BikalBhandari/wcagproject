@@ -1,7 +1,7 @@
 <div class="view-header">
     <div class="header-text">
         <h2>Frequently Asked Questions</h2>
-        <p>Learn how to use the compliance tool and understand our agent fleet.</p>
+        <p>Learn how to use the audit tool and review the configured agents.</p>
     </div>
 </div>
 
@@ -19,7 +19,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
                 <div class="accordion-content">
-                    <p>This tool is a comprehensive accessibility auditing platform. it uses a fleet of specialized AI agents to crawl your websites and identify WCAG compliance issues, specifically focusing on missing alt text, broken links, and semantic structure.</p>
+                    <p>This tool runs accessibility scans against selected scopes and records findings for alt text, contrast, keyboard access, ARIA, focus handling, target size, link integrity, and outline.</p>
                 </div>
             </div>
             <div class="accordion-item">
@@ -28,7 +28,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
                 <div class="accordion-content">
-                    <p>Navigate to the <strong>Dashboard</strong> and click "Start New Scan", or go to the <strong>Scopes</strong> tab and click the "Run Scan" button on a specific scope. You can also create new scopes by importing sitemaps.</p>
+                    <p>Go to the <strong>Dashboard</strong> and click "Start Scan", or use the <strong>Scopes</strong> tab to run a scan for one scope. You can also create scopes by importing sitemaps.</p>
                 </div>
             </div>
             <div class="accordion-item">
@@ -37,7 +37,7 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
                 <div class="accordion-content">
-                    <p>Once you provide a Coda API Token and Doc ID in the <strong>Settings</strong>, the system will automatically sync every completed audit report to your Coda document, creating new sub-pages for each scan.</p>
+                    <p>Once you provide a Coda API Token in the <strong>Settings</strong>, completed results are sent to Coda as a new page with an audit results table. If you do not set a Doc ID, the system uses its default Coda doc.</p>
                 </div>
             </div>
             <div class="accordion-item">
@@ -46,7 +46,16 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
                 <div class="accordion-content">
-                    <p>To keep reports clean and actionable, our <strong>Intelligent Post-Processor</strong> merges overlapping findings. If multiple agents identify issues on the same element, the system automatically prioritizes the most severe problem (e.g., a "Missing Alt" takes precedence over "Generic Alt").</p>
+                    <p>The system deduplicates repeated findings and sorts them by severity. It does not merge every overlapping issue into a single element-level finding.</p>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>What do I need to configure before running scans?</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="accordion-content">
+                    <p>The main setup items are a Coda API Token, the Vision / Gemini API Key for image analysis, and scan settings like concurrency and timeout. The Coda Doc ID is optional because the app has a default fallback, but you can set your own document in Settings if you want reports written elsewhere.</p>
                 </div>
             </div>
         </div>
@@ -59,20 +68,11 @@
             Agent Documentation
         </h3>
         <div class="faq-card">
-            <h4>Active Fleet Capabilities</h4>
-            <p>Our agents are specialized in different WCAG criteria:</p>
-            <ul style="margin-top: 1rem; padding-left: 1.5rem; color: var(--text-dim); line-height: 1.8;">
-                <!-- FAQ_AGENTS_START -->
-                <li><strong>Alt Text Presence:</strong> Identifies images missing alt attributes or properly using empty alt text.</li>
-                <li><strong>Alt Text Quality:</strong> Evaluates descriptive quality of alt text using contextual heuristics and accessibility best practices.</li>
-                <li><strong>Color Contrast:</strong> Validates text readability against background colors to meet WCAG 4.5:1 thresholds.</li>
-                <li><strong>Keyboard Accessibility:</strong> Ensures all interactive elements are reachable and operable without a mouse.</li>
-                <li><strong>Focus Visibility &amp; Order:</strong> Flags suppressed focus outlines and positive tabindex values.</li>
-                <li><strong>ARIA Validation:</strong> Checks for correct usage of ARIA roles, states, and properties.</li>
-                <li><strong>Touch Target Heuristics:</strong> Flags clickable elements that appear too small or icon-only.</li>
-                <li><strong>Link Integrity:</strong> Validates broken internal and external links.</li>
-                <!-- FAQ_AGENTS_END -->
-            </ul>
+            <h4>Configured Agents</h4>
+            <p>These are the configured agents and the accessibility areas they cover:</p>
+            <div id="faq-agent-grid" class="faq-agent-grid">
+                <div class="agent-loading">Loading agents...</div>
+            </div>
         </div>
     </section>
 
@@ -87,23 +87,35 @@
                 <div class="tech-icon">NODE</div>
                 <div class="tech-details">
                     <h5>Backend Runtime</h5>
-                    <p>Node.js with Express for API and Socket.io for real-time updates.</p>
+                    <p>Node.js with Express for the API and Socket.IO for live updates.</p>
                 </div>
             </div>
             <div class="tech-item">
                 <div class="tech-icon">AI</div>
                 <div class="tech-details">
                     <h5>Analysis Engine</h5>
-                    <p>Google Gemini & Vision AI for intelligent image and content analysis.</p>
+                    <p>Vision API key support for image and content analysis agents.</p>
                 </div>
             </div>
             <div class="tech-item">
                 <div class="tech-icon">DB</div>
                 <div class="tech-details">
                     <h5>Data Storage</h5>
-                    <p>JSON-based file system for scopes, settings, and audit logs.</p>
+                    <p>JSON-based file system for scopes, settings, and audit reports.</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Output -->
+    <section class="faq-section">
+        <h3 class="faq-section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path><path d="M14 2v5h5"></path><path d="M9 12h6"></path><path d="M9 16h6"></path><path d="M9 8h2"></path></svg>
+            Reports and Export
+        </h3>
+        <div class="faq-card">
+            <h4>How are scan results delivered?</h4>
+            <p>Each completed run generates CSV and PDF reports, and the dashboard and reports views link to the latest exports. If Coda is configured, the same results are also sent there.</p>
         </div>
     </section>
 </div>

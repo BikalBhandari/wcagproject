@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coda Ingestion Guide | Accessibility Auditor</title>
+    <title>Coda Guide | Accessibility Audit Tool</title>
     <link rel="stylesheet" href="/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         .guide-container {
             max-width: 900px;
@@ -22,7 +19,6 @@
             box-shadow: var(--shadow);
         }
         .guide-content h1 {
-            font-family: 'Geist', sans-serif;
             font-size: 2.5rem;
             margin-bottom: 1rem;
             color: var(--primary);
@@ -39,7 +35,6 @@
             margin-bottom: 1.25rem;
         }
         .guide-content code {
-            font-family: 'JetBrains Mono', monospace;
             background: #F3F4F6;
             padding: 0.2rem 0.4rem;
             border-radius: 4px;
@@ -107,7 +102,8 @@
             <ul>
                 <li>Go to your <a href="https://coda.io/account" target="_blank" rel="noreferrer">Coda Account Settings</a>.</li>
                 <li>Scroll to <strong>API Settings</strong> and generate a new API token.</li>
-                <li><strong>Important:</strong> Keep this token secure. You will need it for the MCP configuration in the settings tab.</li>
+                <li><strong>Important:</strong> Keep this token secure. Paste it into the app’s Settings page for this deployment.</li>
+                <li>The token is stored only on the server instance you configure, in that deployment's local settings file.</li>
             </ul>
 
             <h2><span class="step-badge">2</span> MCP Configuration</h2>

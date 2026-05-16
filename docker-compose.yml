@@ -1,0 +1,46 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      APP_ORIGIN: http://localhost:3000
+      TRUST_PROXY: 1
+      # Set these in a local .env file or through your deployment platform.
+      APP_LOGIN_USERNAME: ${APP_LOGIN_USERNAME}
+      APP_LOGIN_PASSWORD: ${APP_LOGIN_PASSWORD}
+    volumes:
+      - app-data:/app/data
+      - app-output:/app/output
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/readyz').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  redis-data:
+  app-data:
+  app-output:

@@ -1,3 +1,7 @@
+const { createLogger } = require('./logger');
+
+const logger = createLogger('issue-schema');
+
 /**
  * Validates and normalizes an accessibility issue against the strict schema.
  * 
@@ -11,7 +15,7 @@ function validateIssue(issue) {
     // 1. Check for missing fields
     for (const field of requiredFields) {
         if (!issue[field]) {
-            console.warn(`⚠️ Issue fails validation: Missing required field "${field}"`, issue);
+            logger.warn(`Issue fails validation: missing required field "${field}"`, issue);
             throw new Error(`Invalid Issue Schema: Missing required field "${field}"`);
         }
     }
@@ -19,13 +23,13 @@ function validateIssue(issue) {
     // 2. Validate Severity
     const validSeverities = ['high', 'medium', 'low'];
     if (!validSeverities.includes(issue.severity)) {
-        console.warn(`⚠️ Issue fails validation: Invalid severity "${issue.severity}"`, issue);
+        logger.warn(`Issue fails validation: invalid severity "${issue.severity}"`, issue);
         throw new Error(`Invalid Issue Schema: Severity must be one of ${validSeverities.join(', ')}`);
     }
 
     // 3. Validate WCAG (must be array)
     if (!Array.isArray(issue.wcag)) {
-        console.warn('⚠️ Issue fails validation: wcag must be an array', issue);
+        logger.warn('Issue fails validation: wcag must be an array', issue);
         throw new Error('Invalid Issue Schema: wcag must be an array');
     }
 

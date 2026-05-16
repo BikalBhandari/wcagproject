@@ -7,7 +7,8 @@
     "start": "node server/server.js",
     "dev": "node server/server.js",
     "clean": "rm -f output/reports/*.csv output/reports/*.json output/logs/*",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node scripts/test.js",
+    "test:e2e:redis": "node scripts/e2e-redis.js"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "mcp-remote": "^0.1.38",
     "p-limit": "^7.3.0",
     "puppeteer": "^24.42.0",
+    "redis": "^5.8.2",
     "sitemapper": "^4.1.5",
     "socket.io": "^4.8.3"
   }
