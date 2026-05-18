@@ -30,9 +30,6 @@ const targetSizeAgent = require('./targetSizeAgent');
 // --- Visual Agents ---
 const contrastAgent = require('./contrastAgent');
 
-// --- Legacy / Temporary ---
-const wcagAgent = require('./wcagAgent');
-
 const registry = {
     // Detection
     altTextAgent,
@@ -74,10 +71,6 @@ const registry = {
     contrastAgent,
     contrast: contrastAgent,
 
-    // Legacy
-    wcagAgent,
-    wcag: wcagAgent,
-
     // Vision (Reserved for future)
     visionAgent: null,
     vision: null
@@ -92,8 +85,7 @@ const categories = {
     validation: ['formAccessibilityAgent', 'formErrorAgent', 'ariaAgent'],
     outline: ['headingStructureAgent', 'landmarkAgent'],
     interaction: ['keyboardAgent', 'focusAgent', 'targetSizeAgent'],
-    navigation: ['linkAgent', 'linkTextAgent', 'navigationAgent'],
-    legacy: ['wcagAgent']
+    navigation: ['linkAgent', 'linkTextAgent', 'navigationAgent']
 };
 
 module.exports = {

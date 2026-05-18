@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
         
         const enrichedAgents = config.agents.map(a => {
             const meta = registry[a.name] || {};
-            const category = Object.entries(categories).find(([, agents]) => agents.includes(a.name))?.[0] || 'legacy';
+            const category = Object.entries(categories).find(([, agents]) => agents.includes(a.name))?.[0] || '';
             return {
                 ...a,
                 title: meta.title || a.name,

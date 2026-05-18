@@ -54,12 +54,6 @@ module.exports = {
             "config": {}
         },
         {
-            "name": "wcagAgent",
-            "enabled": false,
-            "path": "../agents/wcagAgent.js",
-            "config": {}
-        },
-        {
             "name": "navigationAgent",
             "enabled": false,
             "path": "../agents/navigationAgent.js",

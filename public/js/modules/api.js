@@ -3,6 +3,22 @@ export const api = {
         const res = await fetch('/api/scopes', { cache: 'no-store' });
         return res.json();
     },
+    async createScope(data) {
+        const res = await fetch('/api/scopes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return res.json();
+    },
+    async importSitemap(data) {
+        const res = await fetch('/api/scopes/import-sitemap', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return res.json();
+    },
     async deleteScope(file) {
         const res = await fetch(`/api/scopes/${encodeURIComponent(file)}`, {
             method: 'DELETE',

@@ -2,7 +2,7 @@
     "agents": [
         {
             "name": "altTextAgent",
-            "enabled": false,
+            "enabled": true,
             "path": "../agents/altTextAgent.js",
             "config": {
                 "scanDepth": 5
@@ -51,12 +51,6 @@
             "name": "linkTextAgent",
             "enabled": false,
             "path": "../agents/linkTextAgent.js",
-            "config": {}
-        },
-        {
-            "name": "wcagAgent",
-            "enabled": false,
-            "path": "../agents/wcagAgent.js",
             "config": {}
         },
         {

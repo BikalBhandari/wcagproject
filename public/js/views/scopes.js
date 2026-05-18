@@ -1,4 +1,5 @@
 import { api } from '../modules/api.js';
+import { state } from '../modules/state.js';
 
 let scopes = [];
 let scopeViewMode = 'grid';
@@ -9,6 +10,8 @@ let editScopeUrlRowId = 0;
 export async function init() {
     console.log('Initializing Scopes View...');
     bindScopeMenuHandlers();
+    bindNewScopeForm();
+    bindImportSitemapForm();
     bindEditScopeForm();
     await loadScopes();
 }
@@ -16,7 +19,11 @@ export async function init() {
 async function loadScopes() {
     try {
         scopes = await api.getScopes();
+        state.scopes = scopes;
         renderScopes();
+        if (window.refreshDashboardView) {
+            window.refreshDashboardView();
+        }
     } catch (err) {
         console.error('Error loading scopes:', err);
     }
@@ -211,6 +218,28 @@ function bindEditScopeForm() {
     });
 }
 
+function bindNewScopeForm() {
+    const form = document.getElementById('new-scope-form');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await saveNewScope();
+    });
+}
+
+function bindImportSitemapForm() {
+    const form = document.getElementById('import-sitemap-form');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await saveImportedSitemap();
+    });
+}
+
 function getScopeMenuId(file, prefix) {
     const safeFile = String(file || '').replace(/[^a-zA-Z0-9_-]/g, '-');
     return `${prefix}-${safeFile}`;
@@ -282,6 +311,68 @@ async function deleteScope(file) {
     } catch (err) {
         console.error('Error deleting scope:', err);
         alert('Unable to delete scope right now.');
+    }
+}
+
+async function saveNewScope() {
+    const nameInput = document.getElementById('new-scope-name');
+    const urlsInput = document.getElementById('new-scope-urls');
+
+    const name = nameInput?.value.trim();
+    const urls = parseUrlLines(urlsInput?.value || '');
+
+    if (!name) {
+        alert('Scope name is required.');
+        return;
+    }
+
+    if (urls.length === 0) {
+        alert('Please enter at least one URL.');
+        return;
+    }
+
+    try {
+        const result = await api.createScope({ name, urls });
+        if (!result?.success) {
+            throw new Error(result?.error || 'Create request failed');
+        }
+
+        closeNewScopeModal();
+        await loadScopes();
+    } catch (err) {
+        console.error('Error creating scope:', err);
+        alert(err?.message || 'Unable to create scope right now.');
+    }
+}
+
+async function saveImportedSitemap() {
+    const nameInput = document.getElementById('import-sitemap-name');
+    const sitemapUrlInput = document.getElementById('import-sitemap-url');
+
+    const name = nameInput?.value.trim();
+    const sitemapUrl = sitemapUrlInput?.value.trim();
+
+    if (!name) {
+        alert('Scope name is required.');
+        return;
+    }
+
+    if (!sitemapUrl) {
+        alert('Sitemap URL is required.');
+        return;
+    }
+
+    try {
+        const result = await api.importSitemap({ name, sitemapUrl });
+        if (!result?.success) {
+            throw new Error(result?.error || 'Import request failed');
+        }
+
+        closeImportSitemapModal();
+        await loadScopes();
+    } catch (err) {
+        console.error('Error importing sitemap:', err);
+        alert(err?.message || 'Unable to import sitemap right now.');
     }
 }
 
@@ -365,6 +456,26 @@ function closeEditScopeModal() {
     }
 }
 
+function closeNewScopeModal() {
+    const form = document.getElementById('new-scope-form');
+    if (form) form.reset();
+    if (window.closeModal) {
+        window.closeModal('new-scope-modal');
+    } else {
+        document.getElementById('new-scope-modal')?.classList.add('hidden');
+    }
+}
+
+function closeImportSitemapModal() {
+    const form = document.getElementById('import-sitemap-form');
+    if (form) form.reset();
+    if (window.closeModal) {
+        window.closeModal('import-sitemap-modal');
+    } else {
+        document.getElementById('import-sitemap-modal')?.classList.add('hidden');
+    }
+}
+
 function renderEditScopeUrlRows(urls = ['']) {
     const urlList = document.getElementById('edit-scope-url-list');
     if (!urlList) return;
@@ -436,6 +547,13 @@ function escapeHtmlAttr(value) {
         .replace(/'/g, '&#39;');
 }
 
+function parseUrlLines(value) {
+    return String(value || '')
+        .split(/\r?\n/)
+        .map(url => url.trim())
+        .filter(Boolean);
+}
+
 // These need to be global for now because they are called from onclick in generated HTML
 window.setScopeView = setScopeView;
 window.refreshScopes = refreshScopes;
@@ -443,6 +561,8 @@ window.toggleScopeMenu = toggleScopeMenu;
 window.closeScopeMenus = closeScopeMenus;
 window.openEditScopeModal = openEditScopeModal;
 window.closeEditScopeModal = closeEditScopeModal;
+window.closeNewScopeModal = closeNewScopeModal;
+window.closeImportSitemapModal = closeImportSitemapModal;
 window.addEditScopeUrlRow = addEditScopeUrlRow;
 window.removeEditScopeUrlRow = removeEditScopeUrlRow;
 

@@ -282,8 +282,7 @@ function renderAgents() {
         { id: 'validation', name: 'Validation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' },
         { id: 'outline', name: 'Outline', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>' },
         { id: 'interaction', name: 'Interaction', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4l7 16 2.2-6.4L20 11 4 4z"></path><path d="M14 14l4 4"></path></svg>' },
-        { id: 'navigation', name: 'Navigation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' },
-        { id: 'legacy', name: 'Legacy', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8"/></svg>' }
+        { id: 'navigation', name: 'Navigation', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' }
     ];
 
     let html = '';
@@ -319,7 +318,7 @@ function renderAgents() {
 
 function renderAgentCard(agent) {
     const title = agent.title || agent.name.replace('Agent', '');
-    const category = agent.category || 'legacy';
+    const category = agent.category || '';
     const skills = Array.isArray(agent.skills) && agent.skills.length > 0 ? agent.skills : ['Audit'];
     const configCount = Object.keys(agent.config || {}).length;
     const status = agent.enabled ? 'active' : 'offline';
